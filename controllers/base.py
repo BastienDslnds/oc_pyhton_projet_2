@@ -4,7 +4,6 @@ from models.tournament import Tournament
 from models.round import Round
 from models.match import PairPlayers, Match
 from models.player import Player
-from views.player import PlayerView
 
 import datetime
 
@@ -12,51 +11,61 @@ import datetime
 class Controller:
     """Main controller."""
 
-    def __init__(self, view):
-        """Has a view. """
+    def __init__(self, manager_view):
+        """Has a manager view. """
 
         # models
+        self.tournament = None
 
         # views
-        self.view = view
+        self.manager_view = manager_view
 
-    def get_tournament(self):
-        """Create the tournament. """
+    def display_menu_controller(self):
+        manager_choice = self.manager_view.prompt_for_choice()
+        return manager_choice
 
-        tournament_informations = self.view.prompt_for_tournament
-        tournament = Tournament(tournament_informations[0], tournament_informations[1], tournament_informations[2])
-        return tournament
+    def create_tournament_controller(self):
+        """Create the tournament by asking tournament information to the player. """
 
-    def get_players(self, tournament):
+        tournament_informations = self.manager_view.prompt_for_tournament
+        self.tournament = Tournament(tournament_informations[0], tournament_informations[1], tournament_informations[2])
+
+    def create_players_controller(self):
         """Add players in the tournament.
 
         Need to ask for players information to create it and add it to the tournament. """
 
-        for player in range(8):
-            player_information = self.view.prompt_for_player()
+        nb_players = 8
+
+        for player in range(nb_players):
+            player_information = self.manager_view.prompt_for_player
             player = Player(player_information[0],
                             player_information[1],
                             player_information[2],
                             player_information[3],
                             player_information[4])
-            tournament.players.append(player)
+            self.tournament.players.append(player)
 
-    def open_round(self, tournament):
+    def select_players_controller(self, tournament):
+        pass
+
+    def create_round_controller(self):
         """Add a round to the tournament.
 
         Automatically created with name et start time. """
 
-        if len(tournament.rounds) == 0:
+        if len(self.tournament.rounds) == 0:
             tour = Round("Round 1")
-        elif len(tournament.rounds) == 1:
+            print(tour)
+        elif len(self.tournament.rounds) == 1:
             tour = Round("Round 2")
         else:
             tour = Round("Round 3")
         tour.start_date = datetime.datetime.today()
         tour.start_hour = datetime.datetime.now().time()
-        tournament.rounds.append(tour)
+        self.tournament.rounds.append(tour)
 
-    def get_matchs_pairs(self, tournament: Tournament, tour: Round):
+    def create_matchs_pairs_controller(self):
         """Generate pairs of each round.
 
         Round 1: player 1 with player 5, player 2 with player 6 adn so on.
@@ -64,38 +73,36 @@ class Controller:
         Round 2: player 1 with player 2, plauyer 3 with player 4 and so on.
         Si player 1 already played player 2, then player 1 with player 3. """
 
-        if len(tournament.rounds) == 1:
-            tournament.sort_players_by_ranking()
-            for i in range(int(len(tournament.players)/2)):
+        tour_number = len(self.tournament.rounds)
+        if tour_number == 1:
+            self.tournament.sort_players_by_ranking()
+            for i in range(int(len(self.tournament.players)/2)):
                 pair_players = PairPlayers()  # pair_players = []
-                pair_players.append(tournament.players[i])  # pair_players = [joueur 0]
-                pair_players.append(tournament.players[i+4])  # pair_players = [joueur 0, joueur 1]
+                pair_players.append(self.tournament.players[i])  # pair_players = [joueur 0]
+                pair_players.append(self.tournament.players[i+4])  # pair_players = [joueur 0, joueur 1]
                 match = Match()
                 match.pair = pair_players
-                tour.matchs.append(match)
+                match_stored = match.store_match()
+                self.tournament.rounds[tour_number-1].matchs.append(match_stored)
         else:
-            tournament.sort_players_by_point()
-            pairs_list = []
-            for tour in tournament.rounds:
-                for match in tour.matchs:
-                    pairs_list.append(match.pair)
+            self.tournament.sort_players_by_point()
             players_copy = []
-            for player in tournament.players:
+            for player in self.tournament.players:
                 players_copy.append(player)
             print(f"players_copy={players_copy}")
             while len(players_copy) != 0:
                 print(len(players_copy))
-                print(f"tournament_players={tournament.players}")
+                print(f"tournament_players={self.tournament.players}")
                 for i in range(int(len(players_copy)-1)):
                     print(i)
                     new_paire = PairPlayers()
                     new_paire.append(players_copy[0])
                     new_paire.append(players_copy[i+1])
-                    if new_paire or list(reversed(new_paire)) not in pairs_list:
+                    if new_paire or list(reversed(new_paire)) not in self.tournament.pairs:
                         new_match = Match()
                         new_match.pair = new_paire
-                        tour.matchs.append(new_match)
-                        for match in tour.matchs:
+                        self.tournament.rounds[tour_number].matchs.append(new_match)
+                        for match in self.tournament.rounds[tour_number].matchs:
                             print(match)
                         del players_copy[i + 1]
                         del players_copy[0]
@@ -104,45 +111,106 @@ class Controller:
                     else:
                         i += 1
                         continue
+        """for match in self.tournament.rounds[tour_number-1].matchs:
+            self.tournament.pairs.append(match.pair)"""
 
-    def get_matchs_results(self, tour: Round):
+    def create_matchs_results_controller(self):
         """Save players points by asking for matchs information of the round. """
 
-        for match in tour.matchs:
-            result = self.view.prompt_for_match_result(match)
+        round_number = len(self.tournament.rounds)
+        for match in self.tournament.rounds[round_number-1].matchs:
+            result = self.manager_view.prompt_for_match_result(match)
             if result == str(1):
-                match.score_un = 1
-                match.score_deux = 0
-                match.pair[0].points += 1
+                match[0][1] = 1
+                match[1][1] = 0
+                match[0][0].points += 1
             elif result == str(2):
-                match.score_un = 0
-                match.score_deux = 1
-                match.pair[1].points += 1
+                match[0][1] = 0
+                match[1][1] = 1
+                match[1][0].points += 1
             else:
-                match.score_un = 0.5
-                match.score_deux = 0.5
-                match.pair[0].points += 0.5
-                match.pair[1].points += 0.5
+                match[0][1] = 0.5
+                match[1][1] = 0.5
+                match[0][0].points += 0.5
+                match[1][0].points += 0.5
 
-    def close_round(self, tour: Round):
+    def create_report_all_players_by_alpha_order(self):
+        pass
+
+    def create_report_all_players_by_ranking_order(self):
+        pass
+
+    def create_report_tournament_players_by_alpha_order(self):
+        pass
+
+    def create_report_tournament_players_by_ranking_order(self):
+        pass
+
+    def create_report_tournaments(self):
+        pass
+
+    def create_report_rounds_tournament(self):
+        pass
+
+    def create_report_matchs_tournament(self):
+        pass
+
+    def update_tournament_controller(self):
+        pass
+
+    def update_matchs_results_controller(self):
+        pass
+
+    def update_tournament_controller(self):
+        pass
+
+    def update_round_controller(self):
         """Save end-date and end-hour of the round. """
 
-        tour.end_date = datetime.datetime.today()
-        tour.end_hour = datetime.datetime.now().time()
+        round_number = len(self.tournament.rounds)
+        self.tournament.rounds[round_number-1].end_date = datetime.datetime.today()
+        self.tournament.rounds[round_number-1].end_hour = datetime.datetime.now().time()
+        print(f"Tour {round_number} terminé")
+        print(self.tournament.rounds[round_number-1])
+
+    def update_ranking_end_tournament_controller(self):
+        for player in self.tournament.players:
+            ranking = self.manager_view.prompt_for_update_ranking(player)
+            player.ranking = ranking
+
+    def update_ranking_player_controller(self, player):
+        ranking = self.manager_view.prompt_for_update_ranking(player)
+        player.ranking = ranking
+
+    def delete_tournament_controller(self):
+        pass
+
+    def delete_round_controller(self):
+        pass
 
     def run(self):
         """List actions for the progress of a tournament. """
 
-        tournament = self.get_tournament()
-        self.get_players(tournament)
+        while True:
+            manager_choice = self.display_menu_controller()
 
-        # Loop to handle 4 tournament rounds
-        for tour in range(tournament.nb_rounds):
-            print(tour)
-            self.open_round(tournament)
-            self.get_matchs_pairs(tournament, tournament.rounds[tour])
-            self.get_matchs_results(tournament.rounds[tour])
-            self.close_round(tournament.rounds[tour])
+            functions = {"A": self.create_tournament_controller,
+                         "B": self.create_players_controller,
+                         "C": self.create_round_controller,
+                         "D": self.create_matchs_pairs_controller,
+                         "E": self.create_matchs_results_controller,
+                         "F": self.update_round_controller}
+
+            if manager_choice == "Q":
+                break
+            else:
+                functions[manager_choice]()
+
+            self.tournament.save_players()
+            self.tournament.save_tournament()
+
+
+
 
 
 
