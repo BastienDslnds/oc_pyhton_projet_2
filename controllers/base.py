@@ -5,6 +5,9 @@ from models.round import Round
 from models.match import PairPlayers, Match
 from models.player import Player
 
+from tinydb import Query
+from operator import itemgetter
+
 import datetime
 
 
@@ -61,8 +64,8 @@ class Controller:
             tour = Round("Round 2")
         else:
             tour = Round("Round 3")
-        tour.start_date = datetime.datetime.today()
-        tour.start_hour = datetime.datetime.now().time()
+        tour.start_date = datetime.datetime.today().strftime("%d/%m/%Y")
+        tour.start_hour = datetime.datetime.now().time().strftime("%H:%M:%S")
         self.tournament.rounds.append(tour)
 
     def create_matchs_pairs_controller(self):
@@ -134,25 +137,56 @@ class Controller:
                 match[0][0].points += 0.5
                 match[1][0].points += 0.5
 
-    def create_report_all_players_by_alpha_order(self):
+    def display_report_all_players_by_alpha_order(self):
+        serialized_players = self.tournament.DB.table('Players').all()  # liste avec chaque dictionnaire de joueur
+        serialized_players_ordered = sorted(serialized_players, key=itemgetter('last_name'))
+        for player in serialized_players_ordered:
+            player_displayed = Player(player['last_name'],
+                                      player['first_name'],
+                                      player['birth_date'],
+                                      player['sexe'],
+                                      player['ranking'])
+            print(player_displayed)
+        return serialized_players_ordered
+
+    def display_report_all_players_by_ranking_order(self):
+        serialized_players = self.tournament.DB.table('Players').all()  # liste avec chaque dictionnaire de joueur
+        serialized_players_ordered = sorted(serialized_players, key=itemgetter('ranking'))
+        for player in serialized_players_ordered:
+            player_displayed = Player(player['last_name'],
+                                      player['first_name'],
+                                      player['birth_date'],
+                                      player['sexe'],
+                                      player['ranking'])
+            print(player_displayed)
+        return serialized_players_ordered
+
+    def display_report_tournament_players_by_alpha_order(self):
         pass
 
-    def create_report_all_players_by_ranking_order(self):
+    def display_report_tournament_players_by_ranking_order(self):
         pass
 
-    def create_report_tournament_players_by_alpha_order(self):
+    def display_report_tournaments(self):
+        serialized_tournaments = self.tournament.DB.table('Tournaments').all()
+        for tournament in serialized_tournaments:
+            tournament_displayed = Tournament(tournament['name'],
+                                              tournament['place'],
+                                              tournament['date'])
+            print(tournament_displayed)
+
+    def display_report_rounds_tournament(self):
+        tournaments_available = self.tournament.DB.table('Tournaments').all()
+        print(tournaments_available)
+        id_tournament = self.manager_view.prompt_for_to_select_one_tournament()
+        for tournament in tournaments_available:
+            if tournament['id_tournament'] == id_tournament:
+                print(tournament.rounds)
+            else:
+                continue
         pass
 
-    def create_report_tournament_players_by_ranking_order(self):
-        pass
-
-    def create_report_tournaments(self):
-        pass
-
-    def create_report_rounds_tournament(self):
-        pass
-
-    def create_report_matchs_tournament(self):
+    def display_report_matchs_tournament(self):
         pass
 
     def update_tournament_controller(self):
@@ -161,26 +195,53 @@ class Controller:
     def update_matchs_results_controller(self):
         pass
 
-    def update_tournament_controller(self):
-        pass
-
     def update_round_controller(self):
         """Save end-date and end-hour of the round. """
 
         round_number = len(self.tournament.rounds)
-        self.tournament.rounds[round_number-1].end_date = datetime.datetime.today()
-        self.tournament.rounds[round_number-1].end_hour = datetime.datetime.now().time()
+        self.tournament.rounds[round_number-1].end_date = datetime.datetime.today().strftime("%d/%m/%Y")
+        self.tournament.rounds[round_number-1].end_hour = datetime.datetime.now().time().strftime("%H:%M:%S")
         print(f"Tour {round_number} terminé")
         print(self.tournament.rounds[round_number-1])
 
     def update_ranking_end_tournament_controller(self):
+        """Update the ranking of each player manually. """
+
         for player in self.tournament.players:
             ranking = self.manager_view.prompt_for_update_ranking(player)
             player.ranking = ranking
 
-    def update_ranking_player_controller(self, player):
-        ranking = self.manager_view.prompt_for_update_ranking(player)
-        player.ranking = ranking
+    def update_ranking_player_controller(self):
+        """Update the ranking of a selected player.
+
+        It also modifies players ranking impacted by the new ranking of the selected player. """
+
+        players_available = self.tournament.DB.table('Players').all()
+        print(players_available)
+        player_information = self.manager_view.prompt_for_one_player_ranking_update()
+        ranking_init = 0
+        for player in players_available:
+            if player['id_player'] == player_information[0]:
+                ranking_init = player['ranking']
+                player['ranking'] = player_information[1]
+                break
+            else:
+                continue
+
+        for player in players_available:
+            if player['id_player'] != player_information[0]:
+                if ranking_init < player['ranking'] < player_information[1]:
+                    player['ranking'] -= 1
+                elif player['ranking'] > player_information[1]:
+                    player['ranking'] += 1
+                else:
+                    continue
+            else:
+                continue
+
+        players_table = Tournament.DB.table("Players")
+        players_table.truncate()
+        players_table.insert_multiple(players_available)
 
     def delete_tournament_controller(self):
         pass
@@ -199,15 +260,24 @@ class Controller:
                          "C": self.create_round_controller,
                          "D": self.create_matchs_pairs_controller,
                          "E": self.create_matchs_results_controller,
-                         "F": self.update_round_controller}
+                         "F": self.update_round_controller,
+                         "G": self.update_ranking_player_controller,
+                         "H": self.update_ranking_end_tournament_controller,
+                         "I": self.display_report_all_players_by_alpha_order,
+                         "J": self.display_report_tournaments}
 
             if manager_choice == "Q":
                 break
             else:
                 functions[manager_choice]()
 
-            self.tournament.save_players()
+            if manager_choice != "G":
+                self.tournament.save_players()
+            else:
+                continue
+
             self.tournament.save_tournament()
+
 
 
 
