@@ -16,27 +16,47 @@ class PairPlayers(List):
 class Match:
     """Match"""
 
-    def __init__(self, score_un='', score_deux=''):
-        """Initialize a match"""
+    """def __init__(self, score_un='', score_deux=''):
+        Initialize a match
 
         self.pair: List[Player] = PairPlayers()
         self.score_un = score_un
-        self.score_deux = score_deux
+        self.score_deux = score_deux"""
 
-    def store_match(self):
-        """Store a match in the form of a tuble containing two lists.
-        Ecah list contains a player and a score."""
+    def __init__(self, player_un: Player, player_deux: Player, score_un='', score_deux=''):
+        """Initialize a match"""
 
-        match = ([self.pair[0], self.score_un], [self.pair[1], self.score_deux])
-        return match
+        self.match_stored = ([player_un, score_un], [player_deux, score_deux])
 
     def __str__(self):
         return f"([{self.pair[0]}, {self.score_un}], [{self.pair[1]}, {self.score_deux}])"
 
-    def serialized_match(self):
+    def serialize_match(self):
+        """serialized_players = {}
+
+        for player in self.pair:
+            index = self.pair.index(player)
+            key = index + 1
+            serialized_players[key] = player.serialize_player()
+
         serialized_match = {
-            'pair': self.pair,
+            'players': serialized_players,
             'score_un': self.score_un,
-            'score_deux': self.score_deux,
+            'score_deux': self.score_deux
+        }"""
+
+        """serialized_match = {
+            'player_un': self.player_un.serialize_player(),
+            'player_deux': self.player_deux.serialize_player(),
+            'score_un': self.score_un,
+            'score_deux': self.score_deux
+        }"""
+
+        serialized_match = {
+            'player_un': self.match_stored[0][0].serialize_player(),
+            'player_deux': self.match_stored[1][0].serialize_player(),
+            'score_un': self.match_stored[0][1],
+            'score_deux': self.match_stored[1][1]
         }
+
         return serialized_match
