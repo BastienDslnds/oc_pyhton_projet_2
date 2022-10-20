@@ -4,18 +4,23 @@ from models.match import Match
 class Round:
     """Round"""
 
-    def __init__(self, name):
+    def __init__(self, name, start_date=None, start_hour=None, end_date=None, end_hour=None, matchs=None):
         """Initialize a round. """
 
+        if matchs is None:
+            self.matchs = []
+        else:
+            self.matchs = matchs
         self.name = name
-        self.matchs = []
-        self.start_date = None
-        self.start_hour = None
-        self.end_date = None
-        self.end_hour = None
+        self.start_date = start_date
+        self.start_hour = start_hour
+        self.end_date = end_date
+        self.end_hour = end_hour
 
     def __str__(self):
-        return f"{self.name}"
+        return f"Nom du round: {self.name}\n" \
+               f"Début: {self.start_date} {self.start_hour}\n" \
+               f"Fin: {self.end_date} {self.end_hour}"
 
     def serialize_round(self):
         serialized_matchs = {}

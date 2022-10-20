@@ -8,18 +8,17 @@ class Tournament:
 
     DB = TinyDB(Path(__file__).resolve().parent / 'db.json', indent=4)
 
-    def __init__(self, name, place, date):
+    def __init__(self, tournament_id, name, place, date, description=""):
         """initialize a tournament. """
 
-        self.id_tournament = randint()
+        self.tournament_id = tournament_id
         self.name = name
         self.place = place
         self.date = date
         self.nb_rounds = 4
         self.rounds = []  # rounds list of the tournament
         self.players = []  # players list of the tournament
-        self.pairs = []
-        self.description = ""
+        self.description = description
 
     def __str__(self):
         """Display the tounament with the following format. """
@@ -41,15 +40,23 @@ class Tournament:
         serialized_rounds = {}
         for round in self.rounds:
             index = self.rounds.index(round)
-            key = index+1
-            serialized_rounds[key] = round.serialized_round()
+            key = index + 1
+            serialized_rounds[key] = round.serialize_round()
+
+        serialized_players = {}
+        for player in self.players:
+            index = self.players.index(player)
+            key = index + 1
+            serialized_players[key] = player.serialize_player()
 
         serialized_tournament = {
+            'tournament_id': self.tournament_id,
             'name': self.name,
             'place': self.place,
             'date': self.date,
             'description': self.description,
-            'rounds': serialized_rounds
+            'rounds': serialized_rounds,
+            'players': serialized_players
         }
 
         tournaments_table = Tournament.DB.table("Tournaments")

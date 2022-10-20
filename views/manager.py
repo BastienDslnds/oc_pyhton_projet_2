@@ -8,35 +8,36 @@ class ManagerView:
         tournament = {
             "1": {'description': "Créer un nouveau tournoi", 'on_choice': "A"},
             "2": {'description': "Reprendre un tournoi", 'on_choice': "B"},
-            "3": {'description': "Supprimer un tournoi", 'on_choice': "B"},
+            "3": {'description': "Supprimer un tournoi", 'on_choice': "C"},
+            "4": {'description': "Mettre à jour le classement des joueurs", 'on_choice': "D"}
         }
 
         round = {
-            "1": {'description': "Créer un tour", 'on_choice': "D"},
-            "1": {'description': "Modifier un tour", 'on_choice': "D"},
-            "1": {'description': "Supprimer un tour", 'on_choice': "D"}
+            "1": {'description': "Créer un tour", 'on_choice': "E"},
+            "2": {'description': "Modifier un tour", 'on_choice': "F"},
+            "3": {'description': "Supprimer un tour", 'on_choice': "G"}
         }
 
         match = {
-            "1": {'description': "Générer les paires d'un tour", 'on_choice': "D"},
-            "1": {'description': "Assigner les scores des matchs d'un tour", 'on_choice': "D"},
-            "1": {'description': "Modifier les scores des matchs d'un tour", 'on_choice': "D"}
+            "1": {'description': "Générer les paires d'un tour", 'on_choice': "H"},
+            "2": {'description': "Assigner les scores des matchs d'un tour", 'on_choice': "I"},
+            "3": {'description': "Modifier les scores des matchs d'un tour", 'on_choice': "J"}
         }
 
         player = {
-            "1": {'description': "Sélectionner des joueurs", 'on_choice': "E"},
-            "2": {'description': "Créer de nouveaux joueurs", 'on_choice': "F"},
-            "3": {'description': "Modifier le classement d'un joueur", 'on_choice': "G"}
+            "1": {'description': "Sélectionner des joueurs", 'on_choice': "K"},
+            "2": {'description': "Créer de nouveaux joueurs", 'on_choice': "L"},
+            "3": {'description': "Modifier le classement d'un joueur", 'on_choice': "M"}
         }
 
         report = {
-            "1": {'description': "Afficher la liste des joueurs par ordre alphabétique", 'on_choice': "H"},
-            "2": {'description': "Afficher la liste des joueurs par classement", 'on_choice': "I"},
-            "3": {'description': "Afficher la liste des joueurs d'un tournoi par ordre alphabétique", 'on_choice': "J"},
-            "4": {'description': "Afficher la liste des joueurs d'un tournoi par ordre classement", 'on_choice': "K"},
-            "5": {'description': "Afficher la liste des tournois", 'on_choice': "L"},
-            "6": {'description': "Afficher la liste de tous les tours d'un tournoi", 'on_choice': "M"},
-            "7": {'description': "Afficher la liste de tous les matchs d'un tournoi", 'on_choice': "N"}
+            "1": {'description': "Afficher la liste des joueurs par ordre alphabétique", 'on_choice': "N"},
+            "2": {'description': "Afficher la liste des joueurs par classement", 'on_choice': "O"},
+            "3": {'description': "Afficher la liste des joueurs d'un tournoi par ordre alphabétique", 'on_choice': "P"},
+            "4": {'description': "Afficher la liste des joueurs d'un tournoi par ordre classement", 'on_choice': "R"},
+            "5": {'description': "Afficher la liste des tournois", 'on_choice': "S"},
+            "6": {'description': "Afficher la liste de tous les tours d'un tournoi", 'on_choice': "T"},
+            "7": {'description': "Afficher la liste de tous les matchs d'un tournoi", 'on_choice': "U"}
         }
 
         home = {
@@ -68,7 +69,7 @@ class ManagerView:
         return main
 
     @property
-    def prompt_for_tournament(self):
+    def prompt_to_create_tournament(self):
         """Prompt for a name, a place and a date. """
 
         tournament_informations = []
@@ -81,7 +82,7 @@ class ManagerView:
         return tournament_informations
 
     @property
-    def prompt_for_player(self):
+    def prompt_to_create_player(self):
         """Prompt for the last_name, the first_name, the date of birth, the sexe and the ranking of a player. """
 
         player_informations = []
@@ -91,25 +92,50 @@ class ManagerView:
         sexe = input("Sexe: ")
         ranking = input("Classement: ")
         player_informations.append(last_name)
+        print(last_name)
         player_informations.append(first_name)
         player_informations.append(birth_date)
         player_informations.append(sexe)
         player_informations.append(ranking)
         return player_informations
 
+    def prompt_for_number_players_to_create(self):
+
+        number_players = input(f"Nombre de joueurs à créer: ")
+
+        return number_players
+
     def prompt_for_match_result(self, match):
         """Ask for a match result. """
 
         result = input(
-            f"Choississez le résultat du match entre {match.pair[0]} et {match.pair[1]}.\n"
-            f"Si {match.pair[0]} est le vainqueur, tapez 1\n"
-            f"Si {match.pair[1]} est le vainqueur, tapez 2\n"
+            f"Choississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
+            f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
+            f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
             f"Si match nul, tapez n\n"
             f"résultat: ")
         return result
 
-    def prompt_for_ranking_update(self, player):
+    def prompt_for_one_player_ranking_update(self):
         """Ask for an update of each player ranking. """
 
-        ranking = input(f"Rang de {player.name}: ")
+        id_player = input("Id du joueur: ")
+        ranking = input(f"Nouveau ranking: ")
+        return int(id_player), int(ranking)
+
+    def prompt_for_update_ranking(self, player):
+
+        ranking = input(f"Nouveau ranking de {str(player)}")
+
         return ranking
+
+    def prompt_to_select_one_tournament(self):
+
+        id_tournament = input(f"Id du tournoi: ")
+        return id_tournament
+
+    def prompt_to_select_players(self):
+
+        ids_player = input("Id des joueurs au format suivant id1,id2,id3,etc : ")
+
+        return ids_player
