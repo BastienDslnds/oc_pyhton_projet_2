@@ -4,73 +4,44 @@
 class ManagerView:
     """Manager view."""
 
-    def prompt_for_choice(self):
-        tournament = {
-            "1": {'description': "Créer un nouveau tournoi", 'on_choice': "A"},
-            "2": {'description': "Reprendre un tournoi", 'on_choice': "B"},
-            "3": {'description': "Supprimer un tournoi", 'on_choice': "C"},
-            "4": {'description': "Mettre à jour le classement des joueurs", 'on_choice': "D"}
-        }
+    def prompt_for_choice(self, menu):
+        """Prompt for a choice in the menu.
 
-        round = {
-            "1": {'description': "Créer un tour", 'on_choice': "E"},
-            "2": {'description': "Modifier un tour", 'on_choice': "F"},
-            "3": {'description': "Supprimer un tour", 'on_choice': "G"}
-        }
+        Args:
+            menu[str]: actions menu
 
-        match = {
-            "1": {'description': "Générer les paires d'un tour", 'on_choice': "H"},
-            "2": {'description': "Assigner les scores des matchs d'un tour", 'on_choice': "I"},
-            "3": {'description': "Modifier les scores des matchs d'un tour", 'on_choice': "J"}
-        }
+        Returns:
+            manager_choice (str): choice of the manager
 
-        player = {
-            "1": {'description': "Sélectionner des joueurs", 'on_choice': "K"},
-            "2": {'description': "Créer de nouveaux joueurs", 'on_choice': "L"},
-            "3": {'description': "Modifier le classement d'un joueur", 'on_choice': "M"}
-        }
+        """
+        menu_list = []
+        for action in menu:
+            menu_list.append(action)
 
-        report = {
-            "1": {'description': "Afficher la liste des joueurs par ordre alphabétique", 'on_choice': "N"},
-            "2": {'description': "Afficher la liste des joueurs par classement", 'on_choice': "O"},
-            "3": {'description': "Afficher la liste des joueurs d'un tournoi par ordre alphabétique", 'on_choice': "P"},
-            "4": {'description': "Afficher la liste des joueurs d'un tournoi par ordre classement", 'on_choice': "R"},
-            "5": {'description': "Afficher la liste des tournois", 'on_choice': "S"},
-            "6": {'description': "Afficher la liste de tous les tours d'un tournoi", 'on_choice': "T"},
-            "7": {'description': "Afficher la liste de tous les matchs d'un tournoi", 'on_choice': "U"}
-        }
+        index_choice = 1
+        for action in menu_list:
+            print(f"Choice {index_choice} - {action}")
+            index_choice += 1
 
-        home = {
-            "1": {'description': "Gérer les tournois", 'on_choice': tournament},
-            "2": {'description': "Gérer les rounds", 'on_choice': round},
-            "3": {'description': "Gérer les matchs", 'on_choice': match},
-            "4": {'description': "Gérer les joueurs", 'on_choice': player},
-            "5": {'description': "Afficher les rapports", 'on_choice': report}
-        }
+        manager_choice = input("Entrez un choix valide ou la lettre Q pour quitter l'application: ")
 
-        main = home
+        if manager_choice == 'Q':
+            manager_choice = "Q"
+        elif int(manager_choice) in list(range(1, len(menu_list)+1)):
+            manager_choice = menu_list[int(manager_choice)-1]
+        else:
+            print("Le choix n'est pas valide.")
 
-        while True:
-            if len(main) == 1:
-                break
-            else:
-                for element in main:
-                    print(f"Choice [{element}] - {main[element]['description']}")
-
-                choice = input("Entrez un choix valide ou la lettre Q pour quitter l'application: ")
-
-                if choice == 'Q':
-                    main = 'Q'
-                    break
-                elif choice in main:
-                    main = main[choice]['on_choice']
-                else:
-                    print("Le choix n'est pas valide.")
-        return main
+        return manager_choice
 
     @property
     def prompt_to_create_tournament(self):
-        """Prompt for a name, a place and a date. """
+        """Prompt for a name, a place and a date of tournament.
+
+        Returns:
+            tournament_informations[str]: list of tournament information
+
+        """
 
         tournament_informations = []
         name = input("Nom du tournoi: ")
@@ -83,30 +54,45 @@ class ManagerView:
 
     @property
     def prompt_to_create_player(self):
-        """Prompt for the last_name, the first_name, the date of birth, the sexe and the ranking of a player. """
+        """Prompt for the last_name, the first_name, the date of birth, the sexe and the ranking of a player.
 
-        player_informations = []
+        Returns:
+            player_information[str]: list of player information
+
+        """
+
+        player_information = []
         last_name = input("Nom du joueur: ")
         first_name = input("Prénom du joueur: ")
         birth_date = input("Date de naissance:  ")
         sexe = input("Sexe: ")
         ranking = input("Classement: ")
-        player_informations.append(last_name)
+        player_information.append(last_name)
         print(last_name)
-        player_informations.append(first_name)
-        player_informations.append(birth_date)
-        player_informations.append(sexe)
-        player_informations.append(ranking)
-        return player_informations
+        player_information.append(first_name)
+        player_information.append(birth_date)
+        player_information.append(sexe)
+        player_information.append(ranking)
+        return player_information
 
     def prompt_for_number_players_to_create(self):
+        """Ask for a number of players to create before the beginning of the tournament.
+
+        Returns:
+            number_players (int): number of players
+
+        """
 
         number_players = input(f"Nombre de joueurs à créer: ")
 
         return number_players
 
     def prompt_for_match_result(self, match):
-        """Ask for a match result. """
+        """Ask for a match result.
+
+        Returns:
+            result (str): result of the match
+        """
 
         result = input(
             f"Choississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
@@ -116,25 +102,47 @@ class ManagerView:
             f"résultat: ")
         return result
 
-    def prompt_for_one_player_ranking_update(self):
-        """Ask for an update of each player ranking. """
+    def prompt_for_player_id(self):
+        """Ask for an update of a player ranking.
+
+        Returns:
+            id player (int): id of the player
+        """
 
         id_player = input("Id du joueur: ")
-        ranking = input(f"Nouveau ranking: ")
-        return int(id_player), int(ranking)
 
-    def prompt_for_update_ranking(self, player):
+        return int(id_player)
+
+    def prompt_for_ranking_update(self, player):
+        """Ask for the new ranking of a player.
+
+        Returns:
+            ranking (int): new ranking
+
+        """
 
         ranking = input(f"Nouveau ranking de {str(player)}")
 
         return ranking
 
     def prompt_to_select_one_tournament(self):
+        """Ask for a tournament id.
 
-        id_tournament = input(f"Id du tournoi: ")
-        return id_tournament
+        Returns:
+            tournament id (int): new ranking
+
+        """
+
+        tournament_id = input(f"Id du tournoi: ")
+        return str(tournament_id)
 
     def prompt_to_select_players(self):
+        """Ask for several players.
+
+        Returns:
+            ids_player[int] : list of ids
+
+        """
 
         ids_player = input("Id des joueurs au format suivant id1,id2,id3,etc : ")
 

@@ -1,12 +1,23 @@
-from random import *
+from random import randint
 
 
 class Player:
-    """Joueur"""
+    """Player."""
 
     def __init__(self, last_name, first_name, birth_date, sexe, ranking, player_id=None,
                  points=0, opponents=None):
-        """Initialise un joueur"""
+        """Initialize a player.
+
+        Args:
+            last_name (str) = last_name
+            first_name (str) = first_name
+            birth_date (str) = birth_date
+            sexe (str) = sexe
+            ranking (int) = ranking
+            player_id (str) : player_id
+            points (str) = points
+            opponents[player] = players already confronted in a tournament
+        """
 
         if player_id is None:
             self.player_id = randint(0, 100)
@@ -25,10 +36,23 @@ class Player:
         self.opponents = []
 
     def __str__(self):
-        """Affiche un joueur avec le format suivant"""
+        """Display a player with the following format.
+
+               Returns:
+                   str: player description
+
+        """
+
         return f"{self.last_name} {self.first_name} points={self.points} ranking={self.ranking}"
 
     def serialize_player(self):
+        """Serialize a player in order to add it in the database.
+
+        Returns:
+            serialized_player (dict): player serialized
+
+        """
+
         serialized_player = {
             'player_id': self.player_id,
             'last_name': self.last_name,
@@ -38,4 +62,5 @@ class Player:
             'ranking': self.ranking,
             'points': self.points
         }
+
         return serialized_player
