@@ -29,6 +29,8 @@ class ManagerView:
             if manager_choice == 'Q':
                 manager_choice = "Q"
                 break
+            elif not manager_choice.isdigit():
+                continue
             elif int(manager_choice) in list(range(1, len(menu_list)+1)):
                 manager_choice = menu_list[int(manager_choice)-1]
                 break
@@ -65,28 +67,20 @@ class ManagerView:
 
         """
 
-        player_information = []
-        last_name = input("Nom du joueur: ")
-        first_name = input("Prénom du joueur: ")
-        birth_date = input("Date de naissance:  ")
         while True:
-            sexe = input("Sexe: ")
-            if sexe not in ["M", "F"]:
-                print(f"Renseigner M ou F")
-                continue
-            else:
-                break
-        ranking = input("Classement: ")
-        while True:
-            if ranking.isdigit():
+            label = """
+            Entrez un nouveau joueur à créer
+            Element attendu "last name,first name,birth date(JJ/MM/AAAA),sexe(M ou F),ranking"
+            """
+            player = input(label)
+            player_information = list(player.split(','))
+            print(player_information)
+            if player_information[3] in ["M", "F"] and player_information[4].isdigit():
                 break
             else:
-                continue
-        player_information.append(last_name)
-        player_information.append(first_name)
-        player_information.append(birth_date)
-        player_information.append(sexe)
-        player_information.append(ranking)
+                print(f"Pour le sexe, renseigner M ou F\n"
+                      f"Pour le ranking, renseigner un nombre")
+
         return player_information
 
     def prompt_for_number_players_to_create(self):
@@ -98,11 +92,6 @@ class ManagerView:
         """
 
         number_players = input(f"Nombre de joueurs à créer: ")
-        while True:
-            if number_players.isdigit():
-                break
-            else:
-                continue
 
         return number_players
 
