@@ -1,12 +1,12 @@
 """Module to define the main controller."""
 
 import datetime
+import os
 from operator import itemgetter
 from pathlib import Path
-import os
-from IPython.display import clear_output
 
-from tinydb import Query
+from IPython.display import clear_output
+from tinydb import Query, where
 
 from models.match import Match
 from models.player import Player
@@ -51,15 +51,18 @@ class Controller:
             tournament (tournament): tournament
         """
 
-        """self.tournament = Tournament("1", "Tournoi initial", "Paris", "22/09/2022")"""
-        self.tournament = Tournament("2", "Tournoi 2", "Rennes", "30/09/2022")
+        """self.tournament = Tournament("Tournoi initial", "Paris", "22/09/2022")"""
+        self.tournament = Tournament("Tournoi 2", "Rennes", "30/09/2022")
         print(f"Le tournoi suivant a bien été initialisé: \n"
               f"{self.tournament}")
+
+        self.tournament.save_tournament()
+
         """tournament_informations = self.manager_view.prompt_to_create_tournament
         self.tournament = Tournament(tournament_informations[0], tournament_informations[1], tournament_informations[2])
         return self.tournament"""
 
-    def create_tournament_players(self):
+    def create_player(self):
         """Add players in the tournament.
         Need to ask for players information to create it and add it to the tournament.
 
@@ -68,25 +71,24 @@ class Controller:
         """
 
         joueur_un = Player("Deslandes", "Bastien", "10/11/1995", "M", 1)
-        self.tournament.players.append(joueur_un)
+        joueur_un.save_player()
         joueur_deux = Player("Idilbi", "Sam", "15/06/1995", "M", 4)
-        self.tournament.players.append(joueur_deux)
+        joueur_deux.save_player()
         joueur_trois = Player("Leparoux", "Pierre", "10/11/1995", "M", 5)
-        self.tournament.players.append(joueur_trois)
+        joueur_trois.save_player()
         joueur_quatre = Player("Crosnier", "Hugo", "10/11/1995", "M", 2)
-        self.tournament.players.append(joueur_quatre)
+        joueur_quatre.save_player()
         joueur_cinq = Player("Guillaume", "Camille", "10/11/1995", "M", 3)
-        self.tournament.players.append(joueur_cinq)
+        joueur_cinq.save_player()
         joueur_six = Player("Leporcher", "Ambroise", "10/11/1995", "M", 8)
-        self.tournament.players.append(joueur_six)
+        joueur_six.save_player()
         joueur_sept = Player("Perrin", "Hugo", "10/11/1995", "M", 6)
-        self.tournament.players.append(joueur_sept)
+        joueur_sept.save_player()
         joueur_huit = Player("Coquet", "Jean", "10/11/1995", "M", 7)
-        self.tournament.players.append(joueur_huit)
+        joueur_huit.save_player()
 
-        print(f"Les joueurs suivants ont été ajoutés au tournoi {self.tournament.tournament_id}:\n")
-        for player in self.tournament.players:
-            print(f"{player}\n")
+        print(f"Le joueur a été ajouté à la base de données.\n")
+
 
         """nb_players = self.manager_view.prompt_for_number_players_to_create()
 
@@ -101,27 +103,38 @@ class Controller:
             
         return self.tournament.players"""
 
-    def load_players_in_tournament(self):
+    def load_player_in_tournament(self):
         """Select one or several player(s) from the database and add them to the current tournament.
 
         Returns:
             list[player]: tournament players
         """
 
-        self.display_all_players('last_name')
-        ids_player = self.manager_view.prompt_to_select_players()
-        ids_player = ids_player.split(',')
+        """self.display_all_players('last_name')
+        player_id = self.manager_view.prompt_for_player_id()
         User = Query()
-        for id in ids_player:
-            player_researched = self.tournament.DB.table("Players").search(User.last_name == id)
-            player_researched = Player(player_researched['id_player'],
-                                       player_researched['last_name'],
-                                       player_researched['first_name'],
-                                       player_researched['birth_date'],
-                                       player_researched['sexe'],
-                                       player_researched['ranking'],
-                                       player_researched['points'])
-            self.tournament.players.append(player_researched)
+        player_researched = self.tournament.DB.table("Players").search(User.player_id == player_id)
+        player_researched = Player(player_researched[0]['last_name'],
+                                   player_researched[0]['first_name'],
+                                   player_researched[0]['birth_date'],
+                                   player_researched[0]['sexe'],
+                                   player_researched[0]['ranking'],
+                                   player_researched[0]['points'])
+        self.tournament.players.append(player_researched)"""
+
+        serialized_players = Tournament.DB.table('Players').all()
+        for player in serialized_players:
+            player_displayed = Player(player['last_name'],
+                                      player['first_name'],
+                                      player['birth_date'],
+                                      player['sexe'],
+                                      player['ranking'],
+                                      player['points'])
+            self.tournament.players.append(player_displayed)
+
+        print(f"Le joueur a été ajouté au tournoi {self.tournament.tournament_id}.\n")
+
+        self.tournament.save_tournament_players()
 
         return self.tournament.players
 
@@ -152,6 +165,8 @@ class Controller:
               f"{tour}\n")
         self.tournament.rounds.append(tour)
 
+        self.tournament.save_tournament_rounds()
+
         return self.tournament.rounds
 
     def create_matchs(self):
@@ -169,22 +184,40 @@ class Controller:
         matchs_number_needed = int(len(self.tournament.players) / 2)
         if round_number == 1:
             self.tournament.sort_players_by_ranking()
-            for i in range(matchs_number_needed):
-                player_un = self.tournament.players[i]
-                player_deux = self.tournament.players[i + 4]
-                match = Match(player_un, player_deux)
+            sublist_players_1 = self.tournament.players[:matchs_number_needed]
+            sublist_players_2 = self.tournament.players[matchs_number_needed:]
+            first_round = list(zip(sublist_players_1, sublist_players_2))
+            for match in first_round:
+                player_one = match[0]
+                player_two = match[1]
+                match = Match(player_one, player_two)
+                player_one.opponents.append(player_two)
+                player_two.opponents.append(player_one)
                 self.tournament.rounds[round_number - 1].matchs.append(match)
         else:
             self.tournament.sort_players_by_point()
-            nb_matchs_round = len(self.tournament.rounds[round_number - 1].matchs)
-            index_player = 0
-            while nb_matchs_round < matchs_number_needed:
-                player_un = self.tournament.players[index_player]
-                player_deux = self.tournament.players[index_player + 1]
-                match = Match(player_un, player_deux)
-                self.tournament.rounds[round_number - 1].matchs.append(match)
-                index_player += 2
-                nb_matchs_round += 1
+            players_available = []
+            for player in self.tournament.players:
+                players_available.append(player)
+            index_player_one = 0
+            index_player_two = 1
+            while len(players_available) != 0:
+                print(players_available)
+                player_one = players_available[index_player_one]
+                player_two = players_available[index_player_two]
+                if player_two not in player_one.opponents:
+                    match = Match(player_one, player_two)
+                    self.tournament.rounds[round_number - 1].matchs.append(match)
+                    del players_available[index_player_one]
+                    del players_available[index_player_two - 1]
+                    player_one.opponents.append(player_two)
+                    player_two.opponents.append(player_one)
+                    index_player_two = 1
+                else:
+                    index_player_two += 1
+                    continue
+
+        self.tournament.save_tournament_rounds()
 
         print(f"Les matchs du tour {round_name} ont bien été initialisés\n")
 
@@ -193,26 +226,36 @@ class Controller:
         End time of the associated round is automatically created at the end. """
 
         round_number = len(self.tournament.rounds)
-        for match in self.tournament.rounds[round_number - 1].matchs:
+        matchs = self.tournament.rounds[round_number - 1].matchs
+        for match in matchs:
             result = self.manager_view.prompt_for_match_result(match)
             if result == str(1):
                 match.match_stored[0][1] = 1
                 match.match_stored[1][1] = 0
                 match.match_stored[0][0].points += 1
+                self.tournament.update_player_point(match.match_stored[0][0], match.match_stored[0][0].points)
             elif result == str(2):
                 match.match_stored[0][1] = 0
                 match.match_stored[1][1] = 1
                 match.match_stored[1][0].points += 1
+                self.tournament.update_player_point(match.match_stored[1][0], match.match_stored[1][0].points)
             else:
                 match.match_stored[0][1] = 0.5
                 match.match_stored[1][1] = 0.5
                 match.match_stored[0][0].points += 0.5
                 match.match_stored[1][0].points += 0.5
+                self.tournament.update_player_point(match.match_stored[0][0], match.match_stored[0][0].points)
+                self.tournament.update_player_point(match.match_stored[1][0], match.match_stored[1][0].points)
 
         self.tournament.rounds[round_number - 1].end_date = datetime.datetime.today().strftime("%d/%m/%Y")
         self.tournament.rounds[round_number - 1].end_hour = datetime.datetime.now().time().strftime("%H:%M:%S")
         print(f"Le tour {round_number} est terminé")
         print(self.tournament.rounds[round_number - 1])
+
+        self.tournament.save_tournament_rounds()
+        self.tournament.save_tournament_players()
+
+        # Mettre à jour les points des joueurs au niveau de la base de données players
 
     def display_all_players(self, sort_key):
         """Display all players in a chosen order.
@@ -241,16 +284,19 @@ class Controller:
         """
 
         self.display_report_tournaments()
-        tournament_id = self.manager_view.prompt_to_select_one_tournament()
-        Request = Query()
-        tournament_researched = Tournament.DB.table("Tournaments").search(Request.tournament_id == tournament_id)
-        matchs = tournament_researched[0]['rounds']['1']['matchs']
+        while True:
+            tournament_id = self.manager_view.prompt_for_tournament_id()
+            Request = Query()
+            tournament_researched = Tournament.DB.table("Tournaments").search(Request.tournament_id == tournament_id)
+            if not tournament_researched:
+                print(f"L'id n'existe pas")
+                continue
+            else:
+                break
+        players = tournament_researched[0]['players']
         serialized_players = []
-        for key in matchs:
-            player_un = matchs[key]['player_one']
-            player_deux = matchs[key]['player_two']
-            serialized_players.append(player_un)
-            serialized_players.append(player_deux)
+        for key in players:
+            serialized_players.append(players[key])
 
         serialized_players_ordered = sorted(serialized_players, key=itemgetter(sort_key))
         print(f"Liste des joueurs du tournoi {tournament_id}:")
@@ -267,8 +313,7 @@ class Controller:
         serialized_tournaments = Tournament.DB.table('Tournaments').all()
         tournaments = []
         for tournament in serialized_tournaments:
-            tournament = Tournament(tournament['tournament_id'],
-                                    tournament['name'],
+            tournament = Tournament(tournament['name'],
                                     tournament['place'],
                                     tournament['date'])
             tournaments.append(tournament)
@@ -284,9 +329,15 @@ class Controller:
 
     def get_all_tournament_rounds(self):
         self.display_report_tournaments()
-        tournament_id = self.manager_view.prompt_to_select_one_tournament()
-        Request = Query()
-        tournament_researched = Tournament.DB.table("Tournaments").search(Request.tournament_id == tournament_id)
+        while True:
+            tournament_id = self.manager_view.prompt_for_tournament_id()
+            Request = Query()
+            tournament_researched = Tournament.DB.table("Tournaments").search(Request.tournament_id == tournament_id)
+            if not tournament_researched:
+                print(f"L'id n'existe pas")
+                continue
+            else:
+                break
         rounds = tournament_researched[0]['rounds']
         return rounds, tournament_id
 
@@ -299,7 +350,6 @@ class Controller:
         print(f"Liste de tous les tours du tournoi {tournament_id}")
         for round in rounds_researched:
             round_displayed = Round(rounds_researched[round]['name'],
-                                    rounds_researched[round]['round_id'],
                                     rounds_researched[round]['start_date'],
                                     rounds_researched[round]['start_hour'],
                                     rounds_researched[round]['end_date'],
@@ -324,14 +374,12 @@ class Controller:
                                             match['player_one']['first_name'],
                                             match['player_one']['birth_date'],
                                             match['player_one']['sexe'],
-                                            match['player_one']['ranking'],
-                                            match['player_one']['player_id']),
+                                            match['player_one']['ranking']),
                                      Player(match['player_two']['last_name'],
                                             match['player_two']['first_name'],
                                             match['player_two']['birth_date'],
                                             match['player_two']['sexe'],
-                                            match['player_two']['ranking'],
-                                            match['player_two']['player_id']),
+                                            match['player_two']['ranking']),
                                      match['score_one'],
                                      match['score_two'])
             print(match_researched)
@@ -339,9 +387,30 @@ class Controller:
     def update_tournament_ranking_end(self):
         """Update the ranking of each player manually. """
 
-        for player in self.tournament.players:
-            ranking = self.manager_view.prompt_for_ranking_update(player)
-            player.ranking = ranking
+        for tournament_player in self.tournament.players:
+            print(tournament_player)
+            current_ranking = tournament_player.ranking
+            new_ranking = self.manager_view.prompt_for_ranking_update()
+            new_ranking = int(new_ranking)
+            tournament_player.ranking = new_ranking
+
+            all_players = Tournament.DB.table('Players').all()
+            for player in all_players:
+                if player['player_id'] != tournament_player.player_id:
+                    #  Si le joueur a perdu des places au classement
+                    if new_ranking > current_ranking:
+                        if current_ranking < player['ranking'] <= new_ranking:
+                            player['ranking'] -= 1
+                        else:
+                            continue
+                    else:
+                        if new_ranking <= player['ranking'] < current_ranking:
+                            player['ranking'] += 1
+                        else:
+                            continue
+                else:
+                    player['ranking'] = new_ranking
+                    continue
 
         print("Le classement de chaque joueur du tournoi a été mis à jour")
 
@@ -350,28 +419,43 @@ class Controller:
 
         It also modifies players ranking impacted by the new ranking of the selected player. """
 
-        self.display_tournament_players('last_name')
-        player_id = self.manager_view.prompt_for_player_id
-        Player = Query()
-        player_researched = Tournament.DB.search(Player.player_id == player_id)
-        new_ranking = self.manager_view.prompt_for_ranking_update()
-        player_researched['ranking'] = new_ranking
-
-        players_available = self.tournament.DB.table('Players').all()
-        for player in players_available:
-            if player['id_player'] != player_id:
-                if player['ranking'] < new_ranking:
-                    player['ranking'] -= 1
-                elif player['ranking'] > new_ranking:
-                    player['ranking'] += 1
-                else:
-                    continue
+        self.display_all_players('last_name')
+        while True:
+            player_id = self.manager_view.prompt_for_player_id()
+            Player = Query()
+            player_researched = Tournament.DB.table("Players").search(Player.player_id == player_id)
+            print(player_researched)
+            if not player_researched:
+                print(f"L'id n'existe pas.")
+                continue
             else:
+                break
+        current_ranking = player_researched[0]['ranking']
+        new_ranking = self.manager_view.prompt_for_ranking_update()
+        new_ranking = int(new_ranking)
+        player_researched[0]['ranking'] = new_ranking
+
+        all_players = Tournament.DB.table('Players').all()
+        for player in all_players:
+            if player['player_id'] != player_id:
+                #  Si le joueur a perdu des places au classement
+                if new_ranking > current_ranking:
+                    if current_ranking < player['ranking'] <= new_ranking:
+                        player['ranking'] -= 1
+                    else:
+                        continue
+                else:
+                    if new_ranking <= player['ranking'] < current_ranking:
+                        player['ranking'] += 1
+                    else:
+                        continue
+            else:
+                player['ranking'] = new_ranking
                 continue
 
         players_table = Tournament.DB.table("Players")
         players_table.truncate()
-        players_table.insert_multiple(players_available)
+        players_table.insert_multiple(all_players)
 
         print("Le classement du joueur a été mis à jour. \n"
               "Le classement des autres joueurs a été modifié en conséquence.")
@@ -388,17 +472,22 @@ class Controller:
 
     def load_tournament(self):
         self.display_report_tournaments()
-        tournament_id = self.manager_view.prompt_to_select_one_tournament()
-        Request = Query()
-        tournament_researched = Tournament.DB.table("Tournaments").search(Request.tournament_id == tournament_id)
+        while True:
+            tournament_id = self.manager_view.prompt_for_tournament_id()
+            Request = Query()
+            tournament_researched = Tournament.DB.table("Tournaments").search(Request.tournament_id == tournament_id)
+            if not tournament_researched:
+                print(f"L'id n'existe pas")
+                continue
+            else:
+                break
 
         # initialiser le tournoi
         tournament_name = tournament_researched[0]['name']
         tournament_place = tournament_researched[0]['place']
         tournament_date = tournament_researched[0]['date']
         tournament_description = tournament_researched[0]['description']
-        self.tournament = Tournament(tournament_id,
-                                     tournament_name,
+        self.tournament = Tournament(tournament_name,
                                      tournament_place,
                                      tournament_date,
                                      tournament_description)
@@ -408,7 +497,6 @@ class Controller:
 
         for round_key in rounds:
             round = Round(rounds[round_key]['name'],
-                          rounds[round_key]['round_id'],
                           rounds[round_key]['start_date'],
                           rounds[round_key]['start_hour'],
                           rounds[round_key]['end_date'],
@@ -423,13 +511,13 @@ class Controller:
                                      matchs[match_key]['player_one']['birth_date'],
                                      matchs[match_key]['player_one']['sexe'],
                                      matchs[match_key]['player_one']['ranking'],
-                                     matchs[match_key]['player_one']['player_id']),
+                                     matchs[match_key]['player_one']['points']),
                               Player(matchs[match_key]['player_two']['last_name'],
                                      matchs[match_key]['player_two']['first_name'],
                                      matchs[match_key]['player_two']['birth_date'],
                                      matchs[match_key]['player_two']['sexe'],
                                      matchs[match_key]['player_two']['ranking'],
-                                     matchs[match_key]['player_two']['player_id']),
+                                     matchs[match_key]['player_one']['points']),
                               matchs[match_key]['score_one'],
                               matchs[match_key]['score_two'])
                 round_index = int(round_key) - 1
@@ -442,24 +530,34 @@ class Controller:
                             players[player_key]['birth_date'],
                             players[player_key]['sexe'],
                             players[player_key]['ranking'],
-                            players[player_key]['player_id'])
+                            players[player_key]['points'])
             self.tournament.players.append(player)
 
-        print(f"Reprise du tournoi suivant:\n"
-              f"{self.tournament}")
+        if not self.tournament.rounds:
+            print(f"Reprise du tournoi suivant:\n"
+                  f"{self.tournament}"
+                  f"Aucun tour n'a été créé.")
+        else:
+            current_round = self.tournament.rounds[len(self.tournament.rounds) - 1]
+            print(f"Reprise du tournoi suivant:\n"
+                  f"{self.tournament}"
+                  f"Tour actuel: {str(current_round)}")
 
     def run(self):
         """List actions for the progress of a tournament. """
 
         while True:
 
-            clear_output()
+            # Clearing the Screen
+            os.system('cls')
+
             menu_dict = {'Créer un nouveau tournoi': self.create_tournament,
                          'Reprendre un tournoi': self.load_tournament,
-                         'Mettre à jour le classement en fin de tournoi': self.update_tournament_ranking_end,
+                         'Mettre à jour le classement': self.update_tournament_ranking_end,
+                         "Mettre à jour le classement d'un joueur": self.update_ranking_player,
                          'Créer un round': self.create_round,
-                         "Créer les joueurs d'un tournoi": self.create_tournament_players,
-                         "Importer les joueurs dans un tournoi": self.load_players_in_tournament,
+                         "Ajouter un joueur dans la base de données": self.create_player,
+                         "Ajouter un joueur dans un tournoi": self.load_player_in_tournament,
                          'Créer les matchs': self.create_matchs,
                          'Assigner les résultats': self.create_matchs_results,
                          "Afficher un rapport": ''}
@@ -475,11 +573,14 @@ class Controller:
             if os.path.getsize(Path(__file__).resolve().parent.parent / 'db.json') == 0:
                 menu_dict.pop("Reprendre un tournoi")
                 menu_dict.pop("Afficher un rapport")
+                menu_dict.pop("Mettre à jour le classement d'un joueur")
             else:
                 #  vérifier si la table "Players" contient au moins un joueur
                 if Tournament.DB.table("Players").contains(doc_id=1) is False:
+                    menu_dict.pop("Ajouter un joueur dans un tournoi")
                     menu_reports.pop("Afficher tous les joueurs par ordre alpha")
                     menu_reports.pop("Afficher tous les joueurs par ranking")
+                    menu_dict.pop("Mettre à jour le classement d'un joueur")
 
                 #  vérifier si la table "Tournaments" contient déjà au moins un tournoi
                 if Tournament.DB.table("Tournaments").contains(doc_id=1) is False:
@@ -492,61 +593,68 @@ class Controller:
 
             #  If we don't have a tournament, we are forced to create one or to restart one.
             if self.tournament is None:
-                menu_dict.pop("Mettre à jour le classement en fin de tournoi")
+                print("Menu pour créer un tournoi")
+                menu_dict.pop("Mettre à jour le classement")
                 menu_dict.pop("Créer un round")
-                menu_dict.pop("Créer les joueurs d'un tournoi")
-                menu_dict.pop("Importer les joueurs dans un tournoi")
+                menu_dict.pop("Ajouter un joueur dans un tournoi")
                 menu_dict.pop("Créer les matchs")
                 menu_dict.pop("Assigner les résultats")
             #  If we don't have all players in the tournament, we are forced to create or import player(s)
-            elif len(self.tournament.players) != 8:
-                menu_dict.pop("Créer un nouveau tournoi")
-                menu_dict.pop("Reprendre un tournoi")
-                menu_dict.pop("Mettre à jour le classement en fin de tournoi")
-                menu_dict.pop("Créer un round")
-                menu_dict.pop("Créer les matchs")
-                menu_dict.pop("Assigner les résultats")
-            #  If we don't have a round in the tournament, we are forced to create one
-            elif len(self.tournament.rounds) == 0:
-                menu_dict.pop("Créer un nouveau tournoi")
-                menu_dict.pop("Reprendre un tournoi")
-                menu_dict.pop("Mettre à jour le classement en fin de tournoi")
-                menu_dict.pop("Créer les joueurs d'un tournoi")
-                menu_dict.pop("Importer les joueurs dans un tournoi")
-                menu_dict.pop("Créer les matchs")
-                menu_dict.pop("Assigner les résultats")
-            elif len(self.tournament.rounds) == 4:
-                menu_dict.pop("Reprendre un tournoi")
-                menu_dict.pop("Créer les joueurs d'un tournoi")
-                menu_dict.pop("Importer les joueurs dans un tournoi")
-                menu_dict.pop("Créer les matchs")
-                menu_dict.pop("Assigner les résultats")
-            # If we don't have all matchs in a round, we are forced to create match(s)
-            elif len(self.tournament.rounds[len(self.tournament.rounds) - 1].matchs) != 4:
-                menu_dict.pop("Créer un nouveau tournoi")
-                menu_dict.pop("Reprendre un tournoi")
-                menu_dict.pop("Mettre à jour le classement en fin de tournoi")
-                menu_dict.pop("Créer les joueurs d'un tournoi")
-                menu_dict.pop("Importer les joueurs dans un tournoi")
-                menu_dict.pop("Créer un round")
-                menu_dict.pop("Assigner les résultats")
-            # If we don't assign all matchs score = the round is not ended, we are forced to assign scores
-            elif self.tournament.rounds[len(self.tournament.rounds) - 1].end_date is None:
-                menu_dict.pop("Créer un nouveau tournoi")
-                menu_dict.pop("Reprendre un tournoi")
-                menu_dict.pop("Mettre à jour le classement en fin de tournoi")
-                menu_dict.pop("Créer les joueurs d'un tournoi")
-                menu_dict.pop("Importer les joueurs dans un tournoi")
-                menu_dict.pop("Créer un round")
-                menu_dict.pop("Créer les matchs")
             else:
-                menu_dict.pop("Créer un nouveau tournoi")
-                menu_dict.pop("Reprendre un tournoi")
-                menu_dict.pop("Mettre à jour le classement en fin de tournoi")
-                menu_dict.pop("Créer les joueurs d'un tournoi")
-                menu_dict.pop("Importer les joueurs dans un tournoi")
-                menu_dict.pop("Créer les matchs")
-                menu_dict.pop("Assigner les résultats")
+                rounds_number = len(self.tournament.rounds)
+                players_number = len(self.tournament.players)
+                if players_number != 8:
+                    print("Menu pour ajouter les joueurs au tournoi")
+                    menu_dict.pop("Créer un nouveau tournoi")
+                    menu_dict.pop("Reprendre un tournoi")
+                    """menu_dict.pop("Mettre à jour le classement")"""
+                    menu_dict.pop("Créer un round")
+                    menu_dict.pop("Créer les matchs")
+                    menu_dict.pop("Assigner les résultats")
+                else:
+                    #  If we don't have a round in the tournament, we are forced to create one
+                    if rounds_number == 0:
+                        print("Menu pour créer un tour")
+                        menu_dict.pop("Créer un nouveau tournoi")
+                        menu_dict.pop("Reprendre un tournoi")
+                        """menu_dict.pop("Mettre à jour le classement")"""
+                        menu_dict.pop("Ajouter un joueur dans un tournoi")
+                        menu_dict.pop("Créer les matchs")
+                        menu_dict.pop("Assigner les résultats")
+                    # If we don't have all matchs in a round, we are forced to create match(s)
+                    else:
+                        if len(self.tournament.rounds[rounds_number - 1].matchs) != 4:
+                            print("Menu pour créer les matchs d'un tour")
+                            menu_dict.pop("Créer un nouveau tournoi")
+                            menu_dict.pop("Reprendre un tournoi")
+                            menu_dict.pop("Mettre à jour le classement")
+                            menu_dict.pop("Ajouter un joueur dans un tournoi")
+                            menu_dict.pop("Créer un round")
+                            menu_dict.pop("Assigner les résultats")
+                        # If we don't assign all matchs score = the round is not ended, we are forced to assign scores
+                        elif self.tournament.rounds[rounds_number - 1].end_date is None:
+                            print("Menu pour assigner les résultats d'un tour")
+                            menu_dict.pop("Créer un nouveau tournoi")
+                            menu_dict.pop("Reprendre un tournoi")
+                            menu_dict.pop("Mettre à jour le classement")
+                            menu_dict.pop("Ajouter un joueur dans un tournoi")
+                            menu_dict.pop("Créer un round")
+                            menu_dict.pop("Créer les matchs")
+                        else:
+                            if rounds_number == 4:
+                                menu_dict.pop("Créer un nouveau tournoi")
+                                menu_dict.pop("Reprendre un tournoi")
+                                menu_dict.pop("Créer un round")
+                                menu_dict.pop("Ajouter un joueur dans un tournoi")
+                                menu_dict.pop("Créer les matchs")
+                                menu_dict.pop("Assigner les résultats")
+                            else:
+                                menu_dict.pop("Créer un nouveau tournoi")
+                                menu_dict.pop("Reprendre un tournoi")
+                                menu_dict.pop("Ajouter un joueur dans un tournoi")
+                                menu_dict.pop("Créer les matchs")
+                                menu_dict.pop("Assigner les résultats")
+                                menu_dict.pop("Mettre à jour le classement")
 
             choice = self.display_menu(menu_dict)
 
@@ -564,18 +672,5 @@ class Controller:
                     menu_reports[choice]()
             else:
                 menu_dict[choice]()
-
-            # sauvegarder si nous avons créé de nouveaux joueurs
-            if choice == "Créer les joueurs d'un tournoi":
-                self.tournament.save_players()
-                self.tournament.save_tournament_players()
-            elif choice == "Créer un nouveau tournoi":
-                self.tournament.save_tournament()
-            elif choice in ["Créer un round", "Créer les paires", "Assigner les résultats"]:
-                self.tournament.save_tournament_rounds()
-            elif choice == "Mettre à jour le classement en fin de tournoi":
-                self.tournament.save_tournament_players()
-            else:
-                continue
 
             # penser à mettre à jour les points de chaque joueur dans la table Players après chaque tour ?

@@ -8,10 +8,10 @@ class Tournament:
 
     DB = TinyDB(Path(__file__).resolve().parent.parent / 'db.json', indent=4)
 
-    def __init__(self, tournament_id, name, place, date, description=""):
+    def __init__(self, name, place, date, description=""):
         """initialize a tournament. """
 
-        self.tournament_id = tournament_id
+        self.tournament_id = name + '-' + date
         self.name = name
         self.place = place
         self.date = date
@@ -86,13 +86,13 @@ class Tournament:
         tournaments_table = Tournament.DB.table("Tournaments")
         tournaments_table.update({'rounds': serialized_rounds}, where('tournament_id') == tournament_id)
 
-    def save_players(self):
-        """Save players of a tournament. """
-
-        self.sort_players_by_ranking()
-        serialized_players = []
-        for player in self.players:
-            serialized_players.append(player.serialize_player())
+    def update_player_point(self, player, points):
+        player_id = player.player_id
         players_table = Tournament.DB.table("Players")
-        players_table.insert_multiple(serialized_players)
+        players_table.update({'points': points}, where('player_id') == player_id)
+
+    def update_player_ranking(self, player, ranking):
+        player_id = player.player_id
+        players_table = Tournament.DB.table("Players")
+        players_table.update({'points': ranking}, where('player_id') == player_id)
 

@@ -23,14 +23,18 @@ class ManagerView:
             print(f"Choice {index_choice} - {action}")
             index_choice += 1
 
-        manager_choice = input("Entrez un choix valide ou la lettre Q pour quitter l'application: ")
+        while True:
+            manager_choice = input("Entrez un choix valide ou la lettre Q pour quitter l'application: ")
 
-        if manager_choice == 'Q':
-            manager_choice = "Q"
-        elif int(manager_choice) in list(range(1, len(menu_list)+1)):
-            manager_choice = menu_list[int(manager_choice)-1]
-        else:
-            print("Le choix n'est pas valide.")
+            if manager_choice == 'Q':
+                manager_choice = "Q"
+                break
+            elif int(manager_choice) in list(range(1, len(menu_list)+1)):
+                manager_choice = menu_list[int(manager_choice)-1]
+                break
+            else:
+                print("Le choix n'est pas valide.")
+                continue
 
         return manager_choice
 
@@ -65,10 +69,20 @@ class ManagerView:
         last_name = input("Nom du joueur: ")
         first_name = input("Prénom du joueur: ")
         birth_date = input("Date de naissance:  ")
-        sexe = input("Sexe: ")
+        while True:
+            sexe = input("Sexe: ")
+            if sexe not in ["M", "F"]:
+                print(f"Renseigner M ou F")
+                continue
+            else:
+                break
         ranking = input("Classement: ")
+        while True:
+            if ranking.isdigit():
+                break
+            else:
+                continue
         player_information.append(last_name)
-        print(last_name)
         player_information.append(first_name)
         player_information.append(birth_date)
         player_information.append(sexe)
@@ -84,6 +98,11 @@ class ManagerView:
         """
 
         number_players = input(f"Nombre de joueurs à créer: ")
+        while True:
+            if number_players.isdigit():
+                break
+            else:
+                continue
 
         return number_players
 
@@ -94,26 +113,32 @@ class ManagerView:
             result (str): result of the match
         """
 
-        result = input(
-            f"Choississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
-            f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
-            f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
-            f"Si match nul, tapez n\n"
-            f"résultat: ")
+        while True:
+            result = input(
+                f"Choississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
+                f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
+                f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
+                f"Si match nul, tapez n\n"
+                f"résultat: ")
+            if result in ["1", "2", "n"]:
+                break
+            else:
+                print("Choisir 1 ou 2 ou n")
+                continue
         return result
 
     def prompt_for_player_id(self):
-        """Ask for an update of a player ranking.
+        """Ask for a player id.
 
         Returns:
-            id player (int): id of the player
+            player_id (int): player id
         """
 
-        id_player = input("Id du joueur: ")
+        player_id = input("Id du joueur au format suivant 'last_name-First_name-Birth_date' : ")
 
-        return int(id_player)
+        return player_id
 
-    def prompt_for_ranking_update(self, player):
+    def prompt_for_ranking_update(self):
         """Ask for the new ranking of a player.
 
         Returns:
@@ -121,29 +146,18 @@ class ManagerView:
 
         """
 
-        ranking = input(f"Nouveau ranking de {str(player)}")
+        ranking = input(f"Nouveau ranking: ")
 
         return ranking
 
-    def prompt_to_select_one_tournament(self):
+    def prompt_for_tournament_id(self):
         """Ask for a tournament id.
 
         Returns:
-            tournament id (int): new ranking
+            tournament id (str): new ranking
 
         """
 
-        tournament_id = input(f"Id du tournoi: ")
-        return str(tournament_id)
+        tournament_id = input(f"Id du tournoi au format suivant 'name-date': ")
 
-    def prompt_to_select_players(self):
-        """Ask for several players.
-
-        Returns:
-            ids_player[int] : list of ids
-
-        """
-
-        ids_player = input("Id des joueurs au format suivant id1,id2,id3,etc : ")
-
-        return ids_player
+        return tournament_id

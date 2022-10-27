@@ -4,8 +4,7 @@ from random import *
 class Round:
     """Round"""
 
-    def __init__(self, name,
-                 round_id=None, start_date=None, start_hour=None, end_date=None, end_hour=None, matchs=None):
+    def __init__(self, name, start_date=None, start_hour=None, end_date=None, end_hour=None, matchs=None):
         """Initialize a round.
 
         Args:
@@ -19,10 +18,7 @@ class Round:
 
         """
 
-        if round_id is None:
-            self.round_id = randint(0, 100)
-        else:
-            self.round_id = round_id
+        self.round_id = name + start_date
         if matchs is None:
             self.matchs = []
         else:

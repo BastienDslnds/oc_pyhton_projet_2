@@ -1,10 +1,11 @@
 from random import randint
+from models.tournament import Tournament
 
 
 class Player:
     """Player."""
 
-    def __init__(self, last_name, first_name, birth_date, sexe, ranking, player_id=None,
+    def __init__(self, last_name, first_name, birth_date, sexe, ranking,
                  points=0, opponents=None):
         """Initialize a player.
 
@@ -19,10 +20,7 @@ class Player:
             opponents[player] = players already confronted in a tournament
         """
 
-        if player_id is None:
-            self.player_id = randint(0, 100)
-        else:
-            self.player_id = player_id
+        self.player_id = last_name + '-' + first_name + '-' + birth_date
         self.last_name = last_name
         self.first_name = first_name
         self.birth_date = birth_date
@@ -64,3 +62,10 @@ class Player:
         }
 
         return serialized_player
+
+    def save_player(self):
+        """Save player of a tournament. """
+
+        serialized_player = self.serialize_player()
+        players_table = Tournament.DB.table("Players")
+        players_table.insert(serialized_player)
