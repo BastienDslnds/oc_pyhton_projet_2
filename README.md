@@ -1,4 +1,4 @@
-# Project Title
+# Titre du projet
 
 Programme permettant la gestion de tournois d'échecs suisses.
 
@@ -35,7 +35,7 @@ Les rapports sont:
 * installer Windows, version 10.0.19043
 * installer Python 3.10
 
-### Installing
+### Installation
 
 * git clone https://github.com/BastienDslnds/oc_python_projet_4.git
 * Créer et activer l'environnement virtuel 
@@ -47,9 +47,9 @@ Les rapports sont:
     * activer l'environnement: "source activate"
   * 5- utiliser la commande suivante pour installer les packages: "pip install -r requirements.txt"
 
-### Executing program
+### Executer le programme
 
-* Se positionner dans le dossier "oc_python_projet_2"
+* Se positionner dans le dossier "oc_python_projet_4"
 * Utiliser la commande "python main.py"
 * Un menu d'actions possibles va s'afficher
 
