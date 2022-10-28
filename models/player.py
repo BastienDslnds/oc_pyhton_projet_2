@@ -41,7 +41,7 @@ class Player:
 
         """
 
-        return f"{self.last_name} {self.first_name} points={self.points} ranking={self.ranking}"
+        return f"Player_id {self.player_id}: {self.last_name} {self.first_name} points={self.points} ranking={self.ranking}"
 
     def serialize_player(self):
         """Serialize a player in order to add it in the database.
