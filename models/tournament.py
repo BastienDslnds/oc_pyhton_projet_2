@@ -1,12 +1,11 @@
 from tinydb import TinyDB, where
 from pathlib import Path
-from random import *
 
 
 class Tournament:
     """Tournament"""
 
-    DB = TinyDB(Path(__file__).resolve().parent.parent / 'db.json', indent=4)
+    DB = TinyDB(Path(__file__).resolve().parent.parent / 'database.json', indent=4)
 
     def __init__(self, name, place, date, description=""):
         """initialize a tournament. """

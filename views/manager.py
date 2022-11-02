@@ -74,12 +74,11 @@ class ManagerView:
             """
             player = input(label)
             player_information = list(player.split(','))
-            print(player_information)
             if player_information[3] in ["M", "F"] and player_information[4].isdigit():
                 break
             else:
-                print(f"Pour le sexe, renseigner M ou F\n"
-                      f"Pour le ranking, renseigner un nombre")
+                print("Pour le sexe, renseigner M ou F\n"
+                      "Pour le ranking, renseigner un nombre")
 
         return player_information
 
@@ -104,7 +103,7 @@ class ManagerView:
 
         while True:
             result = input(
-                f"Choississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
+                f"\nChoississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
                 f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
                 f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
                 f"Si match nul, tapez n\n"

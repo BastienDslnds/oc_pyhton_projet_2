@@ -1,10 +1,7 @@
-from random import *
-
-
 class Round:
     """Round"""
 
-    def __init__(self, name, start_date=None, start_hour=None, end_date=None, end_hour=None, matchs=None):
+    def __init__(self, name, start_date, end_date=None, matchs=None):
         """Initialize a round.
 
         Args:
@@ -25,9 +22,7 @@ class Round:
             self.matchs = matchs
         self.name = name
         self.start_date = start_date
-        self.start_hour = start_hour
         self.end_date = end_date
-        self.end_hour = end_hour
 
     def __str__(self):
         """Display a round with the following format.
@@ -37,9 +32,9 @@ class Round:
 
         """
 
-        return f"Nom du round: {self.name}\n" \
-               f"Début: {self.start_date} {self.start_hour}\n" \
-               f"Fin: {self.end_date} {self.end_hour}"
+        return f"{self.name}\n" \
+               f"Début: {self.start_date}\n" \
+               f"Fin: {self.end_date}"
 
     def serialize_round(self):
         """Serialize a round in order to add it in the database.
@@ -60,9 +55,7 @@ class Round:
             'round_id': self.round_id,
             'name': self.name,
             'start_date': self.start_date,
-            'start_hour': self.start_hour,
             'end_date': self.end_date,
-            'end_hour': self.end_hour,
             'matchs': serialized_matchs
         }
 

@@ -5,7 +5,6 @@ from views.manager import ManagerView
 
 
 def main():
-    """Launch a game by generating a manager view and a controller. """
     manager_view = ManagerView()
     game = Controller(manager_view)
     game.run()
@@ -13,5 +12,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
