@@ -1,62 +1,60 @@
-# Project Title
+# Titre du projet
 
-Simple overview of use/purpose.
+Programme permettant la gestion de tournois d'échecs suisses.
 
 ## Description
 
-An in-depth paragraph about your project and overview of use.
+Le projet a pour but de :
+* gérer le déroulement d'un tournoi
+* générer des rapports
+* sauvegarder/charger les données d'un tournoi
 
-## Getting Started
+Le déroulement d'un tournoi est le suivant:
+* Créer un nouveau tournoi
+* Ajouter huit joueurs
+* Générer des paires de joueurs chaque tour
+* Lorsque le tour est terminé, saisir les résultats
+* Répéter jusquà la fin du tournoi
 
-### Dependencies
+Les rapports sont:
+* Liste de tous les acteurs :
+    * par ordre alphabétique ;
+    * par classement.
+* Liste de tous les joueurs d'un tournoi :
+    * par ordre alphabétique ;
+    * par classement.
+* Liste de tous les tournois.
+* Liste de tous les tours d'un tournoi.
+* Liste de tous les matchs d'un tournoi.
 
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
 
-### Installing
+## Se préparer à commencer
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+### Dépendances
 
-### Executing program
+* installer Windows, version 10.0.19043
+* installer Python 3.10
 
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
-```
+### Installation
 
-## Help
+* git clone https://github.com/BastienDslnds/oc_python_projet_4.git
+* Créer et activer l'environnement virtuel 
+  * 1- ouvrir l'application "invite de commande"
+  * 2- se positionner dans le dossier "oc_python_projet_4" contenant le fichier requirements.txt
+  * 3- créer l'environnement virtuel avec: "python -m venv env"
+  * 4- Activer l'environnement virtuel:
+    * se positionner dans le dosser Scripts: "cd env/Scripts"
+    * activer l'environnement: "source activate"
+  * 5- utiliser la commande suivante pour installer les packages: "pip install -r requirements.txt"
 
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
+### Executer le programme
 
-## Authors
+* Se positionner dans le dossier "oc_python_projet_4"
+* Utiliser la commande "python main.py"
+* Un menu d'actions possibles va s'afficher
 
-Contributors names and contact info
+## Auteurs
 
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+Bastien Deslandes
 
-## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-* [dbader](https://github.com/dbader/readme-template)
-* [zenorocha](https://gist.github.com/zenorocha/4526327)
-* [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
+bastien.deslandes@free.fr
