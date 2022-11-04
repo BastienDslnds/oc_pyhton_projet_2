@@ -2,11 +2,11 @@ class HomeMenuView:
 
     def __init__(self, menu) -> None:
         self.menu = menu
-    
+
     def display(self):
         for key, value in self.menu.entries.items():
             print(f"{key} - {value.option}")
-    
+
     def get_choice(self):
 
         while True:
@@ -16,7 +16,7 @@ class HomeMenuView:
                 break
             else:
                 continue
-        choice = self.menu.entries[str(choice)]       
+        choice = self.menu.entries[str(choice)]
         return choice
 
 
@@ -46,21 +46,22 @@ class ManagerView:
         """
         menu_list = self.display_menu(menu)
         while True:
-            manager_choice = input("Entrez un choix valide ou la lettre Q pour revenir au menu principal: ")
+            choice = input("Entrez un choix valide "
+                           "ou Q pour revenir au menu d'accueil:")
 
-            if manager_choice == 'Q':
-                manager_choice = "Q"
+            if choice == 'Q':
+                choice = "Q"
                 break
-            elif not manager_choice.isdigit():
+            elif not choice.isdigit():
                 continue
-            elif int(manager_choice) in list(range(1, len(menu_list)+1)):
-                manager_choice = menu_list[int(manager_choice)-1]
+            elif int(choice) in list(range(1, len(menu_list)+1)):
+                choice = menu_list[int(choice)-1]
                 break
             else:
-                print("Le choix n'est pas valide.")
+                print("\nLe choix n'est pas valide.")
                 continue
 
-        return manager_choice
+        return choice
 
     def prompt_to_create_tournament(self):
         """Prompt for a name, a place and a date of tournament.
@@ -72,7 +73,7 @@ class ManagerView:
 
         tournament_informations = []
 
-        name = input("Nom du tournoi: ")
+        name = input("\nNom du tournoi: ")
         place = input("Lieu du tournoi: ")
         date = input("Date du tournoi: ")
 
@@ -83,7 +84,8 @@ class ManagerView:
         return tournament_informations
 
     def prompt_to_create_player(self):
-        """Prompt for the last_name, the first_name, the date of birth, the sexe and the ranking of a player.
+        """Prompt for the last_name, the first_name, the date of birth,
+        the sexe and the ranking of a player.
 
         Returns:
             player_information[str]: list of player information
@@ -93,17 +95,18 @@ class ManagerView:
         while True:
             label = """
             Entrez un nouveau joueur à créer
-            Element attendu "last name,first name,birth date(JJ/MM/AAAA),sexe(M ou F),ranking"
+            Format attendu :
+            "last name,first name,birth date(JJ/MM/AAAA),sexe(M ou F),ranking"
             """
             player = input(label)
-            player_information = list(player.split(','))
-            if player_information[3] in ["M", "F"] and player_information[4].isdigit():
+            player_info = list(player.split(','))
+            if player_info[3] in ["M", "F"] and player_info[4].isdigit():
                 break
             else:
-                print("Pour le sexe, renseigner M ou F\n"
-                      "Pour le ranking, renseigner un nombre")
+                print("\nPour le sexe, renseigner M ou F\n"
+                      "Pour le ranking, renseigner un nombre\n")
 
-        return player_information
+        return player_info
 
     def prompt_for_player_id(self):
         """Ask for a player id.
@@ -112,10 +115,15 @@ class ManagerView:
             player_id (int): player id
         """
 
-        player_id = input("Id du joueur au format suivant 'last_name-First_name-Birth_date' : ")
+        label = """
+        Entrez l'Id du joueur
+        Format attendu : "last_name-First_name-Birth_date"
+        """
+
+        player_id = input(label)
 
         return player_id
-    
+
     def prompt_for_match_result(self, match):
         """Ask for a match result.
 
@@ -125,7 +133,8 @@ class ManagerView:
 
         while True:
             result = input(
-                f"\nChoississez le résultat du match entre {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
+                f"\nChoississez le résultat du match entre: \
+                {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
                 f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
                 f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
                 f"Si match nul, tapez n\n"
@@ -145,7 +154,11 @@ class ManagerView:
 
         """
 
-        tournament_id = input(f"Id du tournoi au format suivant 'name-date': ")
+        label = """
+        Entrez l'Id du tournoi
+        Format attendu : "name-date"
+        """
+        tournament_id = input(label)
 
         return tournament_id
 
@@ -157,14 +170,12 @@ class ManagerView:
 
         """
 
-        ranking = input(f"Nouveau ranking: ")
+        ranking = input("\nNouveau ranking: ")
 
         return ranking
 
     def display_report(self, elements):
+        print("\n")
         for element in elements:
             print(element)
-
-
-
-
+        print("\n")

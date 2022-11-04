@@ -4,8 +4,8 @@ from models.tournament import Tournament
 class Player:
     """Player."""
 
-    def __init__(self, last_name, first_name, birth_date, sexe, ranking,
-                 points=0, opponents=None):
+    def __init__(self, last_name, first_name, birth_date,
+                 sexe, ranking, points=0):
         """Initialize a player.
 
         Args:
@@ -26,11 +26,6 @@ class Player:
         self.sexe = sexe
         self.ranking = ranking
         self.points = points
-        if opponents is None:
-            self.opponents = []
-        else:
-            self.opponents = opponents
-        self.opponents = []
 
     def __str__(self):
         """Display a player with the following format.
@@ -40,7 +35,8 @@ class Player:
 
         """
 
-        return f"Player_id {self.player_id}: points={self.points} ranking={self.ranking}"
+        return f"Player_id {self.player_id}: points={self.points} \
+            ranking={self.ranking}"
 
     def serialize_player(self):
         """Serialize a player in order to add it in the database.

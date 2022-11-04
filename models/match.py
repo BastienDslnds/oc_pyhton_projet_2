@@ -4,7 +4,8 @@ from .player import Player
 class Match:
     """Match"""
 
-    def __init__(self, player_one: Player, player_two: Player, score_one='', score_two=''):
+    def __init__(self, player_one: Player, player_two: Player,
+                 score_one='', score_two=''):
         """Initialize a match.
 
         Args:
@@ -25,8 +26,9 @@ class Match:
 
         """
 
-        return f"{str(self.match_stored[0][0])} vs {self.match_stored[1][0]}\n" \
-               f"Score: {self.match_stored[0][1]} - {self.match_stored[1][1]}\n"
+        return f"{str(self.match_stored[0][0])} vs \
+            {self.match_stored[1][0]}\n" \
+            f"Score: {self.match_stored[0][1]} - {self.match_stored[1][1]}\n"
 
     def serialize_match(self):
         """Serialize a match in order to add it in the database.

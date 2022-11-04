@@ -21,5 +21,3 @@ class Menu:
             self.auto_key += 1
 
         self.entries[key] = MenuEntry(option, handler)
-
-
