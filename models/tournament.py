@@ -42,7 +42,7 @@ class Tournament:
         self.players.sort(key=lambda player: player.points, reverse=True)
 
     def save_tournament(self):
-        """Save a tournament after an initialisation."""
+        """Save a tournament after a creation."""
 
         serialized_tournament = {
             'tournament_id': self.tournament_id,
@@ -58,7 +58,10 @@ class Tournament:
         tournaments_table.insert(serialized_tournament)
 
     def save_tournament_players(self):
-        """Update on players' tournament on the database. """
+        """Update on players' tournament on the database.
+        Used when:
+        - players are loaded in a tournament
+        - matchs results are completed = update of points"""
 
         tournament_id = self.tournament_id
 

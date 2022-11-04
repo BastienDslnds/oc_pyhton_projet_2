@@ -63,7 +63,9 @@ class Player:
         return serialized_player
 
     def save_player(self):
-        """Save player of a tournament. """
+        """Save player in the table "Players" of the database.
+        Used when a player is created.
+        """
 
         serialized_player = self.serialize_player()
         players_table = Tournament.DB.table("Players")

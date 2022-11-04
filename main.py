@@ -1,13 +1,11 @@
 """Module to define the entry point."""
 
-from controllers.base import Controller
-from views.manager import ManagerView
+from controllers.controllers import ApplicationController
 
 
 def main():
-    manager_view = ManagerView()
-    game = Controller(manager_view)
-    game.run()
+    game = ApplicationController()
+    game.start()
 
 
 if __name__ == "__main__":
