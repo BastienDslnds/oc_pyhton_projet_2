@@ -30,7 +30,7 @@ class ManagerView:
 
         index_choice = 1
         for action in menu_list:
-            print(f"Choice {index_choice} - {action}")
+            print(f"Choix {index_choice} - {action}")
             index_choice += 1
 
         return menu_list
@@ -76,11 +76,9 @@ class ManagerView:
 
         name = input("\nNom du tournoi: ")
         place = input("Lieu du tournoi: ")
-        date = input("Date du tournoi: ")
 
         tournament_informations.append(name)
         tournament_informations.append(place)
-        tournament_informations.append(date)
 
         return tournament_informations
 
@@ -134,7 +132,7 @@ class ManagerView:
 
         while True:
             result = input(
-                f"\nChoississez le résultat du match entre: " +
+                "\nChoississez le résultat du match entre: " +
                 f"{match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
                 f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
                 f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
