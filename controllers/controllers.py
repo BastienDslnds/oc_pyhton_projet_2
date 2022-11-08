@@ -142,7 +142,6 @@ class OnGoingTournamentController:
                 todo = Query()
                 table = Tournament.DB.table("Tournaments")
                 tournament_searched = table.search(todo.tournament_id == id)
-                print(tournament_searched)
                 if not tournament_searched:
                     print("\nL'id n'existe pas")
                     continue
@@ -247,13 +246,19 @@ class TournamentController:
         """
 
         if Tournament.DB.table("Players").contains(doc_id=1) is False:
-            print("There is no player in the database.\n \
-            You have to create players before.")
+            print("\nIl n'y a pas de joueurs dans la base de données.\n \
+            Vous devez en ajouter avant.\n")
         else:
-            id = self.manager_view.prompt_for_player_id()
-            todo = Query()
-            players_table = self.tournament.DB.table("Players")
-            player_researched = players_table.search(todo.player_id == id)
+            while True:
+                id = self.manager_view.prompt_for_player_id()
+                todo = Query()
+                players_table = self.tournament.DB.table("Players")
+                player_researched = players_table.search(todo.player_id == id)
+                if player_researched:
+                    break
+                else:
+                    print("\nL'id n'existe pas.\n")
+                    continue
             player_parameters = [
                 player_researched[0]['last_name'],
                 player_researched[0]['first_name'],
@@ -375,8 +380,8 @@ class TournamentController:
         today_date = datetime.datetime.today()
         end_date = today_date.strftime("%d/%m/%Y %H:%M:%S")
         self.tournament.rounds[round_number - 1].end_date = end_date
-        print(f"\nLe tour {round_number} est terminé")
-        print(self.tournament.rounds[round_number - 1])
+        print(f"\nLe tour {round_number} est terminé.\n")
+        print(f"{self.tournament.rounds[round_number - 1]}\n")
 
         self.tournament.save_tournament_rounds()
         self.tournament.save_tournament_players()
@@ -409,32 +414,39 @@ class TournamentController:
             players_number = len(self.tournament.players)
             rounds_number = len(self.tournament.rounds)
 
+            # if tournament doesn't have 8 players
+            # we have to add a player
             if players_number != 8:
                 menu.pop("Créer un tour")
                 menu.pop("Créer les matchs")
                 menu.pop("Ajouter des résultats")
                 menu.pop("Mettre à jour le classement")
-            elif rounds_number == 0:
+            # if tournament doesn't have a round
+            # or 1, 2 or 3 rounds with an end date
+            # we have to create a round
+            elif rounds_number == 0 or \
+                    (0 < rounds_number < 4 and
+                     self.tournament.rounds[rounds_number - 1].end_date):
                 menu.pop("Ajouter un joueur dans le tournoi")
                 menu.pop("Créer les matchs")
                 menu.pop("Ajouter des résultats")
                 menu.pop("Mettre à jour le classement")
-            elif rounds_number > 0 and \
-                    self.tournament.rounds[rounds_number - 1].end_date:
-                menu.pop("Ajouter un joueur dans le tournoi")
-                menu.pop("Créer les matchs")
-                menu.pop("Ajouter des résultats")
-                menu.pop("Mettre à jour le classement")
+            # if tournament has a round without 4 matchs
+            # we have to create matchs
             elif len(self.tournament.rounds[rounds_number - 1].matchs) != 4:
                 menu.pop("Ajouter un joueur dans le tournoi")
                 menu.pop("Créer un tour")
                 menu.pop("Ajouter des résultats")
                 menu.pop("Mettre à jour le classement")
+            # if tournament has a round without an end date
+            # we have to assign results to close the round
             elif self.tournament.rounds[rounds_number - 1].end_date is None:
                 menu.pop("Ajouter un joueur dans le tournoi")
                 menu.pop("Créer un tour")
                 menu.pop("Créer les matchs")
                 menu.pop("Mettre à jour le classement")
+            # if tournament has 4 rounds and an end date
+            # we can only update the ranking of players tournament
             elif rounds_number == 4:
                 menu.pop("Ajouter un joueur dans le tournoi")
                 menu.pop("Créer un tour")
