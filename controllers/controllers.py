@@ -104,6 +104,9 @@ class NewTournamentController:
         """
 
         tournament_info = self.manager_view.prompt_to_create_tournament()
+        today_date = datetime.datetime.today()
+        start_date = today_date.strftime("%d/%m/%Y")
+        tournament_info.append(start_date)
         tournament = Tournament(*tournament_info)
 
         tournament.save_tournament()
@@ -141,8 +144,7 @@ class OnGoingTournamentController:
                 id = self.manager_view.prompt_for_tournament_id()
                 todo = Query()
                 table = Tournament.DB.table("Tournaments")
-                tournament_searched = table.search(todo.tournament_id == id)
-                print(tournament_searched)
+                tournament_searched = table.search(todo.tournament_id == id)  # type: ignore
                 if not tournament_searched:
                     print("\nL'id n'existe pas")
                     continue
@@ -247,13 +249,19 @@ class TournamentController:
         """
 
         if Tournament.DB.table("Players").contains(doc_id=1) is False:
-            print("There is no player in the database.\n \
-            You have to create players before.")
+            print("\nIl n'y a pas de joueurs dans la base de données.\n \
+            Vous devez en ajouter avant.\n")
         else:
-            id = self.manager_view.prompt_for_player_id()
-            todo = Query()
-            players_table = self.tournament.DB.table("Players")
-            player_researched = players_table.search(todo.player_id == id)
+            while True:
+                id = self.manager_view.prompt_for_player_id()
+                todo = Query()
+                players_table = self.tournament.DB.table("Players")
+                player_researched = players_table.search(todo.player_id == id)
+                if player_researched:
+                    break
+                else:
+                    print("\nL'id n'existe pas.\n")
+                    continue
             player_parameters = [
                 player_researched[0]['last_name'],
                 player_researched[0]['first_name'],
@@ -269,34 +277,6 @@ class TournamentController:
                   f"{self.tournament.tournament_id}.\n")
 
             self.tournament.save_tournament_players()
-
-    def create_round(self):
-        """Create the next round of the tournament.
-        Name and start time are automatically created.
-
-        Returns:
-            list[round]: tournament rounds
-        """
-
-        if len(self.tournament.rounds) == 0:
-            round_name = "Round 1"
-        elif len(self.tournament.rounds) == 1:
-            round_name = "Round 2"
-        elif len(self.tournament.rounds) == 2:
-            round_name = "Round 3"
-        else:
-            round_name = "Round 4"
-
-        today_date = datetime.datetime.today()
-        start_date = today_date.strftime("%d/%m/%Y %H:%M:%S")
-
-        tour = Round(round_name,
-                     start_date=start_date)
-        print(f"\nLe tour suivant a été créé: \n"
-              f"{tour}\n")
-        self.tournament.rounds.append(tour)
-
-        self.tournament.save_tournament_rounds()
 
     def create_matchs(self):
         """Generate matchs of each round.
@@ -337,6 +317,37 @@ class TournamentController:
 
         print(f"\nLes matchs du tour {round_name} ont bien été initialisés\n")
 
+    def create_round(self):
+        """Create the next round of the tournament.
+        Name and start time are automatically created.
+
+        Returns:
+            list[round]: tournament rounds
+        """
+
+        if len(self.tournament.rounds) == 0:
+            round_name = "Round 1"
+        elif len(self.tournament.rounds) == 1:
+            round_name = "Round 2"
+        elif len(self.tournament.rounds) == 2:
+            round_name = "Round 3"
+        else:
+            round_name = "Round 4"
+
+        today_date = datetime.datetime.today()
+        start_date = today_date.strftime("%d/%m/%Y %H:%M:%S")
+
+        tour = Round(round_name,
+                     start_date=start_date)
+        print(f"\nLe tour suivant a été créé: \n"
+              f"{tour.name}\n"
+              f"{tour.start_date}\n")
+
+        self.tournament.rounds.append(tour)
+        self.tournament.save_tournament_rounds()
+
+        self.create_matchs()
+
     def create_matchs_results(self):
         """Save matchs scores by asking for matchs results.
         End time of the associated round
@@ -375,8 +386,8 @@ class TournamentController:
         today_date = datetime.datetime.today()
         end_date = today_date.strftime("%d/%m/%Y %H:%M:%S")
         self.tournament.rounds[round_number - 1].end_date = end_date
-        print(f"\nLe tour {round_number} est terminé")
-        print(self.tournament.rounds[round_number - 1])
+        print(f"\nLe tour {round_number} est terminé.\n")
+        print(f"{self.tournament.rounds[round_number - 1]}\n")
 
         self.tournament.save_tournament_rounds()
         self.tournament.save_tournament_players()
@@ -401,7 +412,6 @@ class TournamentController:
             menu = {
                 "Ajouter un joueur dans le tournoi": self.load_player,
                 "Créer un tour": self.create_round,
-                "Créer les matchs": self.create_matchs,
                 "Ajouter des résultats": self.create_matchs_results,
                 "Mettre à jour le classement": self.update_ranking_end
             }
@@ -409,36 +419,32 @@ class TournamentController:
             players_number = len(self.tournament.players)
             rounds_number = len(self.tournament.rounds)
 
+            # if tournament doesn't have 8 players
+            # we have to add a player
             if players_number != 8:
                 menu.pop("Créer un tour")
-                menu.pop("Créer les matchs")
                 menu.pop("Ajouter des résultats")
                 menu.pop("Mettre à jour le classement")
-            elif rounds_number == 0:
+            # if tournament doesn't have a round
+            # or 1, 2 or 3 rounds with an end date
+            # we have to create a round
+            elif rounds_number == 0 or \
+                    (0 < rounds_number < 4 and
+                     self.tournament.rounds[rounds_number - 1].end_date):
                 menu.pop("Ajouter un joueur dans le tournoi")
-                menu.pop("Créer les matchs")
                 menu.pop("Ajouter des résultats")
                 menu.pop("Mettre à jour le classement")
-            elif rounds_number > 0 and \
-                    self.tournament.rounds[rounds_number - 1].end_date:
-                menu.pop("Ajouter un joueur dans le tournoi")
-                menu.pop("Créer les matchs")
-                menu.pop("Ajouter des résultats")
-                menu.pop("Mettre à jour le classement")
-            elif len(self.tournament.rounds[rounds_number - 1].matchs) != 4:
-                menu.pop("Ajouter un joueur dans le tournoi")
-                menu.pop("Créer un tour")
-                menu.pop("Ajouter des résultats")
-                menu.pop("Mettre à jour le classement")
+            # if tournament has a round without an end date
+            # we have to assign results to close the round
             elif self.tournament.rounds[rounds_number - 1].end_date is None:
                 menu.pop("Ajouter un joueur dans le tournoi")
                 menu.pop("Créer un tour")
-                menu.pop("Créer les matchs")
                 menu.pop("Mettre à jour le classement")
+            # if tournament has 4 rounds and an end date
+            # we can only update the ranking of players tournament
             elif rounds_number == 4:
                 menu.pop("Ajouter un joueur dans le tournoi")
                 menu.pop("Créer un tour")
-                menu.pop("Créer les matchs")
                 menu.pop("Ajouter des résultats")
 
             choice = self.manager_view.get_choice(menu)
@@ -515,7 +521,7 @@ class ReportsController:
             tournament_id = self.manager_view.prompt_for_tournament_id()
             todo = Query()
             table = Tournament.DB.table("Tournaments")
-            tournament = table.search(todo.tournament_id == tournament_id)
+            tournament = table.search(todo.tournament_id == tournament_id)  # type: ignore
             if not tournament:
                 print("\nL'id n'existe pas.\n")
                 continue
@@ -556,7 +562,7 @@ class ReportsController:
             tournament_id = self.manager_view.prompt_for_tournament_id()
             todo = Query()
             table = Tournament.DB.table("Tournaments")
-            tournament = table.search(todo.tournament_id == tournament_id)
+            tournament = table.search(todo.tournament_id == tournament_id)  # type: ignore
             if not tournament:
                 print("\nL'id n'existe pas.\n")
                 continue
@@ -582,7 +588,7 @@ class ReportsController:
             tournament_id = self.manager_view.prompt_for_tournament_id()
             todo = Query()
             table = Tournament.DB.table("Tournaments")
-            tournament = table.search(todo.tournament_id == tournament_id)
+            tournament = table.search(todo.tournament_id == tournament_id)  # type: ignore
             if not tournament:
                 print("\nL'id n'existe pas.\n")
                 continue
@@ -655,7 +661,7 @@ class ReportsController:
 
             if choice == "Q":
                 return HomeMenuController()
-            elif choice in ["Afficher tous les joueurs par ordre alpha",
+            elif choice in ["Afficher tous les joueurs ordre alpha",
                             "Afficher les joueurs d'un tournoi (alpha)"]:
                 menu[choice]('last_name')
             elif choice in ["Afficher tous les joueurs par ranking",
@@ -679,7 +685,7 @@ class RankingController:
             id = self.manager_view.prompt_for_player_id()
             todo = Query()
             table = Tournament.DB.table("Players")
-            player_researched = table.search(todo.player_id == id)
+            player_researched = table.search(todo.player_id == id)  # type: ignore
             if not player_researched:
                 print("\nL'id n'existe pas.\n")
                 continue
@@ -689,7 +695,7 @@ class RankingController:
         new_ranking = int(new_ranking)
 
         table = Tournament.DB.table("Players")
-        table.update({'ranking': new_ranking}, where('player_id') == id)
+        table.update({'ranking': new_ranking}, where('player_id') == id)  # type: ignore
 
         print("\nLe classement du joueur a été mis à jour. \n")
 

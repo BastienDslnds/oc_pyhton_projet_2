@@ -53,6 +53,12 @@ Les rapports sont:
 * Utiliser la commande "python main.py"
 * Un menu d'actions possibles va s'afficher
 
+### Générer un nouveau fichier flake8-html
+
+* Se positionner dans le dossier "oc_python_projet_4"
+* Utiliser la commande "flake8 --format=html --htmldir=flake-report --exclude=env --max-line-length=119"
+* Un dossier flake-report sera généré avec un fichier "index.html"
+
 ## Auteurs
 
 Bastien Deslandes

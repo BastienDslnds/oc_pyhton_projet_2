@@ -4,6 +4,7 @@ class HomeMenuView:
         self.menu = menu
 
     def display(self):
+        print("\n")
         for key, value in self.menu.entries.items():
             print(f"{key} - {value.option}")
 
@@ -29,7 +30,7 @@ class ManagerView:
 
         index_choice = 1
         for action in menu_list:
-            print(f"Choice {index_choice} - {action}")
+            print(f"Choix {index_choice} - {action}")
             index_choice += 1
 
         return menu_list
@@ -75,11 +76,9 @@ class ManagerView:
 
         name = input("\nNom du tournoi: ")
         place = input("Lieu du tournoi: ")
-        date = input("Date du tournoi: ")
 
         tournament_informations.append(name)
         tournament_informations.append(place)
-        tournament_informations.append(date)
 
         return tournament_informations
 
@@ -96,7 +95,7 @@ class ManagerView:
             label = """
             Entrez un nouveau joueur à créer
             Format attendu :
-            "last name,first name,birth date(JJ/MM/AAAA),sexe(M ou F),ranking"
+            "Nom,Prénom,date de naissance(JJ/MM/AAAA),sexe(M ou F),classement"
             """
             player = input(label)
             player_info = list(player.split(','))
@@ -133,8 +132,8 @@ class ManagerView:
 
         while True:
             result = input(
-                f"\nChoississez le résultat du match entre: \
-                {match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
+                "\nChoississez le résultat du match entre: " +
+                f"{match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
                 f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
                 f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"
                 f"Si match nul, tapez n\n"
