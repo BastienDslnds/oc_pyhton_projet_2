@@ -9,14 +9,12 @@ class Player:
         """Initialize a player.
 
         Args:
-            last_name (str) = last_name
-            first_name (str) = first_name
-            birth_date (str) = birth_date
-            sexe (str) = sexe
-            ranking (int) = ranking
-            player_id (str) : player_id
-            points (str) = points
-            opponents[player] = players already confronted in a tournament
+            last_name (str): last_name
+            first_name (str): first_name
+            birth_date (str): birth_date
+            sexe (str): sexe
+            ranking (int): ranking
+            points (str): points
         """
 
         self.player_id = last_name + '-' + first_name + '-' + birth_date

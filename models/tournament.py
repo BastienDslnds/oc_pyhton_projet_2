@@ -7,12 +7,21 @@ class Tournament:
 
     DB = TinyDB(DATABASE_PATH, indent=4)
 
-    def __init__(self, name, place, date, description=""):
-        """initialize a tournament. """
+    def __init__(self, name, place, time_control, date, description=""):
+        """_summary_
+
+        Args:
+            name (string): name of the tournament
+            place (string): place of the tournament
+            date (string): start date of the tournament
+            time_control (string): time control of the tournament
+            description (str, optional): tournament director remarks.
+        """
 
         self.tournament_id = name + '-' + date
         self.name = name
         self.place = place
+        self.time_control = time_control
         self.date = date
         self.nb_rounds = 4
         self.rounds = []  # rounds list of the tournament
@@ -37,8 +46,7 @@ class Tournament:
 
     def sort_players_by_point(self):
         """First, sort players tournament by points.
-        if players have the same number of points,
-        then sort them by ranking. """
+        """
 
         self.players.sort(key=lambda player: player.points, reverse=True)
 
@@ -49,6 +57,7 @@ class Tournament:
             'tournament_id': self.tournament_id,
             'name': self.name,
             'place': self.place,
+            'time_control': self.time_control,
             'date': self.date,
             'description': self.description,
             'rounds': {},
@@ -59,10 +68,11 @@ class Tournament:
         tournaments_table.insert(serialized_tournament)
 
     def save_tournament_players(self):
-        """Update on players' tournament on the database.
+        """Save players tournament
+        in "Tournaments" table of the database.
         Used when:
-        - players are loaded in a tournament
-        - matchs results are completed = update of points"""
+        - players are loaded in a tournament ;
+        - matchs results are completed = update of points."""
 
         id = self.tournament_id
 
@@ -76,7 +86,13 @@ class Tournament:
         table.update({'players': serialized_players}, where('tournament_id') == id)
 
     def save_tournament_rounds(self):
-        """Update on rounds' tournament on the database. """
+        """Save rounds tournament
+        in "Tournaments" table of the database.
+        Used when:
+        - round is created ;
+        - matchs are created ;
+        - matchs results are completed.
+        """
 
         id = self.tournament_id
 
@@ -90,11 +106,15 @@ class Tournament:
         table.update({'rounds': serialized_rounds}, where('tournament_id') == id)
 
     def update_player_point(self, player, points):
+        """Update player points in players table.
+        Used when:
+        - Matchs results are completed
+
+        Args:
+            player (Player): player
+            points (int): points of the player
+        """
+
         player_id = player.player_id
         table = Tournament.DB.table("Players")
         table.update({'points': points}, where('player_id') == player_id)
-
-    def update_player_ranking(self, player, ranking):
-        player_id = player.player_id
-        table = Tournament.DB.table("Players")
-        table.update({'points': ranking}, where('player_id') == player_id)

@@ -1,14 +1,24 @@
 class HomeMenuView:
+    """View to manage the hme menu.
+    """
 
     def __init__(self, menu) -> None:
         self.menu = menu
 
     def display(self):
+        """Display the home menu.
+        """
+
         print("\n")
         for key, value in self.menu.entries.items():
             print(f"{key} - {value.option}")
 
     def get_choice(self):
+        """Get the tournament manager choice.
+
+        Returns:
+            choice (str): manager choice
+        """
 
         while True:
             self.display()
@@ -22,13 +32,24 @@ class HomeMenuView:
 
 
 class ManagerView:
+    """View to manage actions following the home menu.
+    """
 
     def display_menu(self, menu):
+        """Display the sub menu following the home menu.
+
+        Args:
+            menu (dict): sub menu
+
+        Returns:
+            menu_list (List): _description_
+        """
         menu_list = []
         for action in menu:
             menu_list.append(action)
 
         index_choice = 1
+        print("\n")
         for action in menu_list:
             print(f"Choix {index_choice} - {action}")
             index_choice += 1
@@ -75,10 +96,28 @@ class ManagerView:
         tournament_informations = []
 
         name = input("\nNom du tournoi: ")
-        place = input("Lieu du tournoi: ")
+        place = input("\nLieu du tournoi: ")
+        while True:
+            time_control = input(
+                "\nChoisissez le contrôle du temps entre 1, 2 ou 3:\n" +
+                "1 - bullet\n" +
+                "2 - blitz\n" +
+                "3 - coup rapide\n")
+            if time_control == "1":
+                time_control = "bullet"
+                break
+            elif time_control == "2":
+                time_control = "blitz"
+                break
+            elif time_control == "3":
+                time_control = "coup rapide"
+                break
+            else:
+                continue
 
         tournament_informations.append(name)
         tournament_informations.append(place)
+        tournament_informations.append(time_control)
 
         return tournament_informations
 
@@ -132,7 +171,7 @@ class ManagerView:
 
         while True:
             result = input(
-                "\nChoississez le résultat du match entre: " +
+                "\nChoisissez le résultat du match entre: " +
                 f"{match.match_stored[0][0]} et {match.match_stored[1][0]}.\n"
                 f"Si {match.match_stored[0][0]} est le vainqueur, tapez 1\n"
                 f"Si {match.match_stored[1][0]} est le vainqueur, tapez 2\n"

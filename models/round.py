@@ -8,11 +8,8 @@ class Round:
             name (str): name of the round
             round_id (str): id of the round
             start_date (str): start date of the round
-            start_hour (str): start hour of the round
             end_date (str): end date of the round
-            end_hour (str): end hour of the round
             matchs[match]: list of round matchs
-
         """
 
         self.round_id = name + start_date
@@ -34,7 +31,7 @@ class Round:
 
         return f"{self.name}\n" \
                f"Début: {self.start_date}\n" \
-               f"Fin: {self.end_date}"
+               f"Fin: {self.end_date}\n"
 
     def serialize_round(self):
         """Serialize a round in order to add it in the database.
