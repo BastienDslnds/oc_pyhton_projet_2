@@ -28,8 +28,8 @@ class Player:
     def __str__(self):
         """Display a player with the following format.
 
-               Returns:
-                   str: player description
+        Returns:
+            str: player description
 
         """
 
