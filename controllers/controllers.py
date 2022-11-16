@@ -429,6 +429,7 @@ class TournamentController:
                     new_ranking = int(new_ranking)
                     break
                 else:
+                    print("Le classement doit être un nombre.\n")
                     continue
 
             table = Tournament.DB.table("Players")
