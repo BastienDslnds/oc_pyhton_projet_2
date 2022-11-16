@@ -13,7 +13,6 @@ class Match:
             player_two (player): second player of the match
             score one (int): score of the first player
             score two (int): score of the second player
-
         """
 
         self.match_stored = ([player_one, score_one], [player_two, score_two])
@@ -23,11 +22,9 @@ class Match:
 
                Returns:
                    str: match description
-
         """
 
-        return f"{str(self.match_stored[0][0])} vs \
-            {self.match_stored[1][0]}\n" \
+        return f"{str(self.match_stored[0][0])} vs {self.match_stored[1][0]}\n" \
             f"Score: {self.match_stored[0][1]} - {self.match_stored[1][1]}\n"
 
     def serialize_match(self):

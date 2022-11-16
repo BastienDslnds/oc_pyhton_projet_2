@@ -1,4 +1,4 @@
-# Titre du projet
+# Développement d'un programme logiciel en python: tournoi suisse d'échec
 
 Programme permettant la gestion de tournois d'échecs suisses.
 

@@ -1,3 +1,5 @@
+"""Module to define controllers."""
+
 import datetime
 import os
 from operator import itemgetter
@@ -40,13 +42,15 @@ class HomeMenuController:
         """Initialize the home menu.
         With a menu and a view using the menu.
         """
-
+        # menu
         self.menu = Menu()
+
+        # views
         self.view = HomeMenuView(self.menu)
 
     def run(self):
         """Display the home menu.
-        Get back the controller chosen.
+        Get back the chosen controller.
 
         Returns:
             handler (Controller): controller associated to the choice
@@ -55,6 +59,8 @@ class HomeMenuController:
         self.menu.add("auto",
                       "Créer un nouveau tournoi",
                       NewTournamentController())
+
+        # if "Tournaments" table is not empty, i can resume a tournament
         if Tournament.DB.table("Tournaments").contains(doc_id=1) is True:
             self.menu.add("auto",
                           "Reprendre un tournoi",
@@ -62,10 +68,12 @@ class HomeMenuController:
         self.menu.add("auto",
                       "Ajouter un joueur",
                       PlayersController())
+        # if "Players" table is not empty, i can update a player ranking
         if Tournament.DB.table("Players").contains(doc_id=1) is True:
             self.menu.add("auto",
                           "Mettre à jour le classement d'un joueur",
                           RankingController())
+        # if databse is not empty, i can access reports
         if os.path.getsize(DATABASE_PATH) != 0:
             self.menu.add("auto",
                           "Afficher les rapports",
@@ -100,7 +108,7 @@ class NewTournamentController:
         """Create a tournament.
 
         Returns:
-            tournament (Tournament): tournament
+            tournament (Tournament): tournament created
         """
 
         tournament_info = self.manager_view.prompt_to_create_tournament()
@@ -114,8 +122,8 @@ class NewTournamentController:
         return tournament
 
     def run(self):
-        """List of actions to create a new tournament
-        and choose the next controller.
+        """Method to create a new tournament
+        and to automatically use the TournamentController.
         """
 
         tournament = self.create_tournament()
@@ -130,11 +138,19 @@ class OnGoingTournamentController:
         """Initialize a controller to continue a tournament.
         """
 
+        # menu
         self.menu = Menu()
+
+        # views
         self.manager_view = ManagerView()
         self.view = HomeMenuView(self.menu)
 
     def load_tournament(self):
+        """load a tournament already in database.
+
+        Returns:
+            tournament (Tournament): resumed tournament
+        """
 
         if Tournament.DB.table("Tournaments").contains(doc_id=1) is False:
             print("\nThere is no tournament in the database.\n \
@@ -155,6 +171,7 @@ class OnGoingTournamentController:
             tournament_parameters = [
                 tournament_searched[0]['name'],
                 tournament_searched[0]['place'],
+                tournament_searched[0]['time_control'],
                 tournament_searched[0]['date'],
                 tournament_searched[0]['description']
             ]
@@ -226,8 +243,8 @@ class OnGoingTournamentController:
             return tournament
 
     def run(self):
-        """List of actions to load a tournament
-        and choose the next controller.
+        """Method to load a tournament
+        and to automatically use the TournamentController.
         """
 
         tournament = self.load_tournament()
@@ -236,8 +253,15 @@ class OnGoingTournamentController:
 
 
 class TournamentController:
+    """Controller to manager a tournament progress.
+    """
 
     def __init__(self, tournament) -> None:
+        """Initialize a tournament controller.
+
+        Args:
+            tournament (Tournament): tournament to control
+        """
         self.tournament = tournament
         self.manager_view = ManagerView()
 
@@ -249,8 +273,11 @@ class TournamentController:
         """
 
         if Tournament.DB.table("Players").contains(doc_id=1) is False:
-            print("\nIl n'y a pas de joueurs dans la base de données.\n \
-            Vous devez en ajouter avant.\n")
+            label = """
+            Il n'y a pas de joueurs dans la base de données.
+            Vous devez en ajouter avant.
+            """
+            print(label)
         else:
             while True:
                 id = self.manager_view.prompt_for_player_id()
@@ -283,9 +310,9 @@ class TournamentController:
 
         Round 1: player 1 with player 5, player 2 with player 6 and so on.
 
-        Round 2: player 1 with player 2, plauyer 3 with player 4 and so on.
-        If player 1 already played player 2, then player 1 with player 3.
-
+        Round 2,3 and 4:
+        players are sorted by theirs points.
+        player 1 with player 2, player 3 with player 4 and so on.
         """
 
         round_number = len(self.tournament.rounds)
@@ -320,9 +347,7 @@ class TournamentController:
     def create_round(self):
         """Create the next round of the tournament.
         Name and start time are automatically created.
-
-        Returns:
-            list[round]: tournament rounds
+        Round amtchs are automatically created.
         """
 
         if len(self.tournament.rounds) == 0:
@@ -349,7 +374,7 @@ class TournamentController:
         self.create_matchs()
 
     def create_matchs_results(self):
-        """Save matchs scores by asking for matchs results.
+        """Get matchs scores by asking for matchs results.
         End time of the associated round
         is automatically created at the end. """
 
@@ -398,8 +423,13 @@ class TournamentController:
         for tournament_player in self.tournament.players:
             print(f"\n{tournament_player}")
             id = tournament_player.player_id
-            new_ranking = self.manager_view.prompt_for_ranking_update()
-            new_ranking = int(new_ranking)
+            while True:
+                new_ranking = self.manager_view.prompt_for_ranking_update()
+                if new_ranking.isdigit():
+                    new_ranking = int(new_ranking)
+                    break
+                else:
+                    continue
 
             table = Tournament.DB.table("Players")
             table.update({'ranking': new_ranking}, where('player_id') == id)
@@ -407,6 +437,9 @@ class TournamentController:
         print("\nLe classement de chaque joueur a été mis à jour.\n")
 
     def run(self):
+        """Method to manage the tournament progress.
+        """
+
         while True:
 
             menu = {
@@ -456,17 +489,16 @@ class TournamentController:
 
 
 class PlayersController:
+    """Controller to manager players.
+    """
 
     def __init__(self) -> None:
         self.manager_view = ManagerView()
 
     def create_player(self):
-        """Add players in the tournament.
+        """Create player in the table "Players".
         Need to ask for players information
-        to create it and add it to the tournament.
-
-        Returns:
-            list[player] : tournament players
+        to create it and automatically add it to the database.
         """
 
         player_information = self.manager_view.prompt_to_create_player()
@@ -478,13 +510,21 @@ class PlayersController:
         player.save_player()
 
     def run(self):
+        """Method to create a player
+        and get back to the home menu.
+        """
+
         self.create_player()
         return HomeMenuController()
 
 
 class ReportsController:
+    """Controller to manage reports display.
+    """
 
     def __init__(self):
+        """Initialize a report controller.
+        """
         self.elements = []
         self.manager_view = ManagerView()
 
@@ -548,15 +588,21 @@ class ReportsController:
                 self.elements.append(Player(*parameters))
 
     def get_all_tournaments(self):
+        """Get all tournaments of the database
+        in form of tournament instance.
+        """
+
         serialized_tournaments = Tournament.DB.table('Tournaments').all()
         for tournament in serialized_tournaments:
             tournament = Tournament(tournament['name'],
                                     tournament['place'],
-                                    tournament['date'])
+                                    tournament['time_control'],
+                                    tournament['date'],
+                                    tournament['description'])
             self.elements.append(tournament)
 
     def get_tournament_rounds(self):
-        """Display all rounds of a selected tournament. """
+        """Get all rounds of a selected tournament. """
 
         while True:
             tournament_id = self.manager_view.prompt_for_tournament_id()
@@ -582,7 +628,7 @@ class ReportsController:
                 self.elements.append(Round(*round_parameters))
 
     def get_tournament_matchs(self):
-        """Display all matchs of a selected tournament. """
+        """Get all matchs of a selected tournament. """
 
         while True:
             tournament_id = self.manager_view.prompt_for_tournament_id()
@@ -633,6 +679,12 @@ class ReportsController:
                 self.elements.append(match_researched)
 
     def run(self):
+        """Method to manage the report menu display
+        and then allow the manager to choose.
+        At the end, the view and a method allow to
+        display the choosen report.
+        """
+
         while True:
 
             self.elements = []
@@ -674,12 +726,16 @@ class ReportsController:
 
 
 class RankingController:
+    """Controller to change players ranking.
+    """
 
     def __init__(self):
         self.manager_view = ManagerView()
 
     def update_ranking_any_time(self):
-        """Update the ranking of a selected player."""
+        """Update the ranking of a selected player.
+        Table "Players" is update.
+        """
 
         while True:
             id = self.manager_view.prompt_for_player_id()
@@ -700,17 +756,30 @@ class RankingController:
         print("\nLe classement du joueur a été mis à jour. \n")
 
     def run(self):
+        """Method to update a player ranking
+        and to automatically get back to home menu.
+
+        Returns:
+            HomeMenuController (Controller) : controller of the home menu
+        """
+
         self.update_ranking_any_time()
 
         return HomeMenuController()
 
 
 class EndScreenController:
+    """Controller to leave the application.
+    """
+
     def run(self):
         return None
 
 
 class CleanController:
+    """Controller to clean the command terminal.
+    """
+
     def run(self):
         os.system('cls')
         return HomeMenuController()
